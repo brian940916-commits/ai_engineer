@@ -841,3 +841,95 @@ button {
     animation: none;
   }
 }
+
+/* ── new-day screen (feature 2) ────────────────────────────── */
+.newday {
+  min-height: 100vh;
+  max-width: 440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  animation: newdayFade 0.4s ease;
+}
+
+.newday__art {
+  width: 168px;
+  height: 192px;
+  margin: 14px 0;
+  transform-origin: center bottom;
+  animation: seedGrow 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.newday__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  animation: newdayLine 0.4s ease both;
+}
+
+.newday__msg {
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
+  animation: newdayLine 0.4s ease both;
+}
+
+.newday__yesterday {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 14px;
+  font-weight: 500;
+  animation: newdayLine 0.4s ease both;
+}
+
+.newday__btn {
+  width: 100%;
+  margin-top: 32px;
+  padding: 16px;
+  border: none;
+  border-radius: var(--r-btn);
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(95, 185, 142, 0.28);
+  animation: newdayLine 0.4s ease both;
+}
+
+.newday__btn:hover {
+  background: #4fa87a;
+}
+
+@keyframes newdayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes seedGrow {
+  0% { transform: scale(0.3); opacity: 0; }
+  70% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes newdayLine {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newday,
+  .newday__art,
+  .newday__title,
+  .newday__msg,
+  .newday__yesterday,
+  .newday__btn {
+    animation: none;
+  }
+}

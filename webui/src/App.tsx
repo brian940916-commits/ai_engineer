@@ -7,6 +7,7 @@ import { SettingsScreen } from './components/SettingsScreen';
 import { Toast, type ToastData } from './components/Toast';
 import { PlantGallery } from './components/PlantGallery';
 import { OnboardingScreen } from './components/OnboardingScreen';
+import { NewDayScreen } from './components/NewDayScreen';
 import { BLOOM_MESSAGE } from './lib/copy';
 import { localToday } from './lib/api';
 
@@ -23,6 +24,9 @@ export default function App() {
   const [toast, setToast] = useState<ToastData | null>(null);
   const [celebrating, setCelebrating] = useState(false);
   const [onboarded, setOnboarded] = useState(() => !!localStorage.getItem('plantBuddyOnboarded'));
+  const [newDaySeen, setNewDaySeen] = useState(
+    () => localStorage.getItem('plantBuddyLastSeenDate') === localToday()
+  );
   const toastId = useRef(0);
 
   const showToast = useCallback((message: string, type: ToastData['type']) => {
@@ -80,7 +84,17 @@ export default function App() {
   );
 
   if (!onboarded) {
-    return <OnboardingScreen onComplete={() => setOnboarded(true)} />;
+    return (
+      <OnboardingScreen
+        onComplete={() => {
+          // Skip the new-day animation on the onboarding day (avoid two
+          // back-to-back full-screens).
+          localStorage.setItem('plantBuddyLastSeenDate', localToday());
+          setNewDaySeen(true);
+          setOnboarded(true);
+        }}
+      />
+    );
   }
 
   if (loading && !status) {
@@ -101,6 +115,18 @@ export default function App() {
           </button>
         </div>
       </main>
+    );
+  }
+
+  if (!newDaySeen) {
+    return (
+      <NewDayScreen
+        status={status}
+        onContinue={() => {
+          localStorage.setItem('plantBuddyLastSeenDate', localToday());
+          setNewDaySeen(true);
+        }}
+      />
     );
   }
 
