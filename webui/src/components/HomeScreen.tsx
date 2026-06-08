@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { StatusResponse } from '../types';
 import { greeting, MOOD_ALERT, MOOD_CAPTION } from '../lib/copy';
+import { getPlantSpeech } from '../lib/plantSpeech';
 import { PlantView } from './PlantView';
 import { ProgressBar } from './ProgressBar';
 import { QuickAdd } from './QuickAdd';
 import { HistoryStrip } from './HistoryStrip';
 import { WaterDrop } from './WaterDrop';
+import { SpeechBubble } from './SpeechBubble';
 
 interface Props {
   status: StatusResponse;
@@ -22,6 +24,21 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
   const [bouncing, setBouncing] = useState(false);
   const [showWater, setShowWater] = useState(false);
   const prevTotal = useRef(today.totalMl);
+
+  // Speech bubbles. `key` remounts the bubble so a new line replays the animation.
+  const [speech, setSpeech] = useState<{ text: string; key: number } | null>(null);
+  const speechKey = useRef(0);
+  const say = useCallback((text: string) => {
+    if (!text) return;
+    speechKey.current += 1;
+    setSpeech({ text, key: speechKey.current });
+  }, []);
+
+  // Latest mood / last-drink, read by mount-only timers without stale closures.
+  const moodRef = useRef(plant.mood);
+  moodRef.current = plant.mood;
+  const lastDrinkRef = useRef(today.lastDrinkAt);
+  lastDrinkRef.current = today.lastDrinkAt;
 
   // Play the water-drop splash immediately on tap (optimistic), then log.
   const handleAddWithAnim = (ml: number) => {
@@ -41,6 +58,40 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
     prevTotal.current = today.totalMl;
   }, [today.totalMl]);
 
+  // onload: greet ~0.8s after the screen settles (once per mount).
+  useEffect(() => {
+    const t = window.setTimeout(() => say(getPlantSpeech(moodRef.current, 'onload')), 800);
+    return () => clearTimeout(t);
+  }, [say]);
+
+  // afterDrink: a real drink moves lastDrinkAt (the optimistic bump doesn't), so
+  // by the time this fires the mood is the reconciled post-drink mood.
+  const prevLastDrink = useRef(today.lastDrinkAt);
+  useEffect(() => {
+    if (today.lastDrinkAt && today.lastDrinkAt !== prevLastDrink.current) {
+      say(getPlantSpeech(plant.mood, 'afterDrink'));
+    }
+    prevLastDrink.current = today.lastDrinkAt;
+  }, [today.lastDrinkAt, plant.mood, say]);
+
+  // idle: if it's been >3h since the last drink, nudge once per app launch.
+  useEffect(() => {
+    let fired = false;
+    const id = window.setInterval(() => {
+      if (fired) return;
+      const last = lastDrinkRef.current;
+      const hours = last ? (Date.now() - new Date(last).getTime()) / 3_600_000 : Infinity;
+      if (hours > 3) {
+        const line = getPlantSpeech(moodRef.current, 'idle');
+        if (line) {
+          say(line);
+          fired = true;
+        }
+      }
+    }, 60_000);
+    return () => clearInterval(id);
+  }, [say]);
+
   return (
     <>
       <div className="greeting">
@@ -59,6 +110,9 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
 
       <div className="plant-hero-wrap">
         {showWater && <WaterDrop />}
+        {speech && (
+          <SpeechBubble key={speech.key} text={speech.text} onClose={() => setSpeech(null)} />
+        )}
         <div className={`plant-hero${bouncing ? ' bounce' : ''}`}>
           <PlantView plant={plant} />
         </div>
