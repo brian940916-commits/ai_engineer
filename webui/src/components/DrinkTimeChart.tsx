@@ -1,5 +1,5 @@
 import { getDrinkLog } from '../lib/drinkLog';
-import { recentLocalDates } from '../lib/api';
+import { localToday } from '../lib/api';
 
 // Distribution of drinks by time-of-day over the last 7 days. Data is read from
 // the local drink log (see drinkLog.ts) — the backend has no per-drink times yet.
@@ -26,9 +26,9 @@ function isoFromTs(ts: number): string {
 }
 
 export function DrinkTimeChart() {
-  // Window by the app's last 7 local dates (honours the demo day-offset) rather
-  // than wall-clock time, so the chart tracks "today" as the date advances.
-  const windowDates = new Set(recentLocalDates(7));
+  // Today only (honours the demo day-offset via localToday), so the chart resets
+  // each day and fills as the user drinks.
+  const today = localToday();
   const totals: Record<BucketKey, { count: number; ml: number }> = {
     morning: { count: 0, ml: 0 },
     afternoon: { count: 0, ml: 0 },
@@ -38,7 +38,7 @@ export function DrinkTimeChart() {
 
   for (const e of getDrinkLog()) {
     const day = e.date ?? isoFromTs(e.ts); // fall back for pre-existing entries
-    if (!windowDates.has(day)) continue;
+    if (day !== today) continue;
     const b = totals[bucketOf(new Date(e.ts).getHours())];
     b.count += 1;
     b.ml += e.ml;
@@ -48,7 +48,7 @@ export function DrinkTimeChart() {
 
   return (
     <div>
-      <div className="section-label">喝水時段</div>
+      <div className="section-label">今日喝水時段</div>
       <div className="dtc">
         {BUCKETS.map((b) => {
           const { count, ml } = totals[b.key];
