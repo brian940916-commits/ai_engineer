@@ -1,5 +1,6 @@
 import { API_BASE } from '../config';
 import { getUserId } from './identity';
+import { logDrinkTime } from './drinkLog';
 import type { Profile, RecordResponse, StatusResponse } from '../types';
 
 // "Today" is the client's LOCAL calendar date (YYYY-MM-DD), sent to the server so
@@ -39,6 +40,9 @@ export const recordWater = (amountMl: number) =>
   api<RecordResponse>('/water', {
     method: 'POST',
     body: JSON.stringify({ amountMl, date: localToday() }),
+  }).then((res) => {
+    logDrinkTime(amountMl); // local time-of-day log (feature 6)
+    return res;
   });
 
 export const updateProfile = (p: { goalMl?: number; nickname?: string }) =>

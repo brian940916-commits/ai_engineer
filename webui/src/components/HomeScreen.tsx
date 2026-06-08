@@ -8,6 +8,7 @@ import { QuickAdd } from './QuickAdd';
 import { HistoryStrip } from './HistoryStrip';
 import { WaterDrop } from './WaterDrop';
 import { SpeechBubble } from './SpeechBubble';
+import { DrinkTimeChart } from './DrinkTimeChart';
 
 interface Props {
   status: StatusResponse;
@@ -128,6 +129,10 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
 
       <div className="card">
         <HistoryStrip history={history} />
+      </div>
+
+      <div className="card">
+        <DrinkTimeChart />
       </div>
 
       <div className="footer">
