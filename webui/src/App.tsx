@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { PlantSkin, Screen } from './types';
+import type { PlantMood, PlantSkin, Screen } from './types';
 import { useStatus } from './hooks/useStatus';
 import { useReminders } from './hooks/useReminders';
 import { HomeScreen } from './components/HomeScreen';
@@ -13,6 +13,8 @@ import { BLOOM_MESSAGE } from './lib/copy';
 import { localToday } from './lib/api';
 import { calcStreak, yesterday } from './lib/streak';
 import { MILESTONES, highestSkin, readUnlockedSkins, writeUnlockedSkins } from './lib/achievements';
+
+const DEMO_MOODS: PlantMood[] = ['sleepy', 'happy', 'ok', 'thirsty', 'wilting'];
 
 export default function App() {
   // Dev-only: ?preview renders the stage × mood gallery, no backend required.
@@ -48,6 +50,12 @@ export default function App() {
   });
   const streakCount = demoStreak > 0 ? demoStreak : streakInfo?.current ?? 0;
   const currentSkin = highestSkin(unlockedSkins);
+
+  // Demo override (Settings → 模擬花朵情緒): force the displayed mood.
+  const [demoMood] = useState<PlantMood | null>(() => {
+    const m = localStorage.getItem('plantBuddyDemoMood');
+    return DEMO_MOODS.includes(m as PlantMood) ? (m as PlantMood) : null;
+  });
 
   // Yesterday missed → the lifeline banner may offer a rescue.
   const yesterdayMissed = useMemo(() => {
@@ -181,7 +189,7 @@ export default function App() {
     <main className="app">
       {screen === 'home' ? (
         <HomeScreen
-          status={status}
+          status={demoMood ? { ...status, plant: { ...status.plant, mood: demoMood } } : status}
           busy={busy}
           skin={currentSkin}
           streak={streakCount}

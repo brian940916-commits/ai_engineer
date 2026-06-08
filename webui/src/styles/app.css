@@ -655,6 +655,10 @@ button {
   grid-template-columns: repeat(4, 1fr);
 }
 
+.demo-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .demo-btn {
   border: 1.5px solid #d5ebe2;
   background: var(--surface);

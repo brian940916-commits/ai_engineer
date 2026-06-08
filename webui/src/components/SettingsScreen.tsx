@@ -1,6 +1,16 @@
 import { useState } from 'react';
-import type { Profile } from '../types';
+import type { PlantMood, Profile } from '../types';
 import { localToday } from '../lib/api';
+import { MOOD_LABEL } from '../lib/copy';
+
+const DEMO_MOODS: PlantMood[] = ['sleepy', 'happy', 'ok', 'thirsty', 'wilting'];
+const MOOD_EMOJI: Record<PlantMood, string> = {
+  sleepy: '😴',
+  happy: '😊',
+  ok: '🙂',
+  thirsty: '😟',
+  wilting: '🥀',
+};
 
 interface Props {
   profile: Profile;
@@ -167,6 +177,27 @@ export function SettingsScreen({
           </button>
         ))}
       </div>
+      <div className="set-sub" style={{ padding: '10px 4px 6px' }}>
+        模擬花朵情緒
+      </div>
+      <div className="demo-grid demo-grid--3">
+        {DEMO_MOODS.map((m) => (
+          <button
+            key={m}
+            className="demo-btn"
+            onClick={() => demo(() => localStorage.setItem('plantBuddyDemoMood', m))}
+          >
+            {MOOD_EMOJI[m]} {MOOD_LABEL[m]}
+          </button>
+        ))}
+        <button
+          className="demo-btn"
+          onClick={() => demo(() => localStorage.removeItem('plantBuddyDemoMood'))}
+        >
+          🔄 自動
+        </button>
+      </div>
+
       <button
         className="demo-btn demo-btn--clear"
         onClick={() =>
@@ -174,6 +205,7 @@ export function SettingsScreen({
             localStorage.removeItem('plantBuddyDemoStreak');
             localStorage.removeItem('plantBuddyUnlocked');
             localStorage.removeItem('plantBuddyLifelineDate');
+            localStorage.removeItem('plantBuddyDemoMood');
             localStorage.removeItem('plantBuddyDemoDayOffset');
             // Offset is gone, so localToday() is the real date — mark it seen to
             // avoid a stray new-day screen right after resetting.
