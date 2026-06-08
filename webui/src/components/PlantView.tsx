@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import type { Plant, PlantMood, PlantStage, PlantSkin } from '../types';
+import type { Plant, PlantMood, PlantStage } from '../types';
 import { MOOD_LABEL, STAGE_LABEL } from '../lib/copy';
 
 // Faithful port of the design handoff's PlantSVG (plant-buddy-plants.jsx):
@@ -33,47 +33,37 @@ const C = {
 
 interface Props {
   plant: Plant;
-  skin?: PlantSkin; // achievement skin (feature 3); defaults to the plain plant
 }
 
-export function PlantView({ plant, skin = 'default' }: Props) {
+export function PlantView({ plant }: Props) {
   return (
     <div
       role="img"
       aria-label={`小植物：${STAGE_LABEL[plant.stage]}、${MOOD_LABEL[plant.mood]}`}
-      className={`plant-skin plant-skin--${skin}`}
+      className="plant-skin plant-skin--default"
       style={{ width: '100%', height: '100%' }}
     >
-      <PlantSVG stage={plant.stage} mood={plant.mood} skin={skin} />
+      <PlantSVG stage={plant.stage} mood={plant.mood} />
     </div>
   );
 }
 
-function PlantSVG({ stage, mood, skin }: { stage: PlantStage; mood: PlantMood; skin: PlantSkin }) {
+function PlantSVG({ stage, mood }: { stage: PlantStage; mood: PlantMood }) {
   const wilting = mood === 'wilting';
   const thirsty = mood === 'thirsty';
   const sleepy = mood === 'sleepy';
   const happy = mood === 'happy';
 
-  // Gold-family skins recolour the foliage and flowers; glow/rainbow/legend
-  // visual treatment is applied via CSS on the wrapper (see app.css). An unlocked
-  // skin stays vivid across all moods — mood is still conveyed by leaf droop and
-  // the face, so a wilting gold plant droops but keeps its gold colour.
-  const gold = skin === 'gold' || skin === 'legend';
-  const skinned = skin !== 'default';
-
-  const lf = gold ? C.flowerGold : wilting ? C.leafMuted : C.leafGreen;
-  const ld = gold ? C.flowerAmber : wilting ? '#8CAA7C' : C.leafDark;
-  const st = gold ? '#E0A030' : wilting ? C.stemMuted : C.stemGreen;
+  const lf = wilting ? C.leafMuted : C.leafGreen;
+  const ld = wilting ? '#8CAA7C' : C.leafDark;
+  const st = wilting ? C.stemMuted : C.stemGreen;
   const droop = wilting ? 18 : thirsty ? 9 : 0;
 
-  const svgFilter = skinned
-    ? 'none' // don't desaturate an earned skin
-    : wilting
-      ? 'saturate(42%) sepia(18%)'
-      : sleepy
-        ? 'saturate(70%) brightness(95%)'
-        : 'none';
+  const svgFilter = wilting
+    ? 'saturate(42%) sepia(18%)'
+    : sleepy
+      ? 'saturate(70%) brightness(95%)'
+      : 'none';
 
   const Pot = () => (
     <g>
@@ -263,8 +253,8 @@ function PlantSVG({ stage, mood, skin }: { stage: PlantStage; mood: PlantMood; s
             <line x1="60" y1="115" x2="60" y2="60" stroke={st} strokeWidth="3.5" strokeLinecap="round" />
             <LowerLeaves y={108} big={true} />
             <UpperLeaves y={84} />
-            <ellipse cx="60" cy="53" rx="9" ry="14" fill={gold ? C.flowerGold : C.budPink} />
-            <ellipse cx="60" cy="51" rx="5.5" ry="9" fill={gold ? C.flowerAmber : C.budDeep} opacity="0.4" />
+            <ellipse cx="60" cy="53" rx="9" ry="14" fill={C.budPink} />
+            <ellipse cx="60" cy="51" rx="5.5" ry="9" fill={C.budDeep} opacity="0.4" />
             <path d="M60,64 C52,63 48,56 52,53 C56,50 60,55 60,64Z" fill={lf} opacity="0.85" />
             <path d="M60,64 C68,63 72,56 68,53 C64,50 60,55 60,64Z" fill={lf} opacity="0.85" />
             <Face cx={60} cy={68} />
@@ -282,7 +272,7 @@ function PlantSVG({ stage, mood, skin }: { stage: PlantStage; mood: PlantMood; s
               const px = 60 + 15 * Math.cos(rad);
               const py = 42 + 15 * Math.sin(rad);
               return (
-                <ellipse key={i} cx={px} cy={py} rx="8" ry="11" fill={gold ? (i % 2 === 0 ? '#FDE08A' : C.flowerGold) : i % 2 === 0 ? C.flowerPink : C.flowerLight} transform={`rotate(${deg},${px},${py})`} />
+                <ellipse key={i} cx={px} cy={py} rx="8" ry="11" fill={i % 2 === 0 ? C.flowerPink : C.flowerLight} transform={`rotate(${deg},${px},${py})`} />
               );
             })}
             <circle cx="60" cy="42" r="12" fill={C.flowerGold} />
@@ -304,22 +294,6 @@ function PlantSVG({ stage, mood, skin }: { stage: PlantStage; mood: PlantMood; s
     >
       <Pot />
       {renderBody()}
-      {skin === 'legend' && (
-        <g className="crown-ring">
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => {
-            const r = (deg * Math.PI) / 180;
-            return (
-              <circle
-                key={i}
-                cx={(60 + 26 * Math.cos(r)).toFixed(1)}
-                cy={(36 + 26 * Math.sin(r)).toFixed(1)}
-                r={i % 2 ? 2.6 : 1.8}
-                fill={i % 2 ? C.flowerGold : '#FDE08A'}
-              />
-            );
-          })}
-        </g>
-      )}
     </svg>
   );
 }

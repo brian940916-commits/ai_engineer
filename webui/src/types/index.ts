@@ -1,6 +1,6 @@
 export type PlantStage = 'seed' | 'sprout' | 'growing' | 'budding' | 'blooming';
 export type PlantMood = 'sleepy' | 'happy' | 'ok' | 'thirsty' | 'wilting';
-export type PlantSkin = 'default' | 'glow' | 'gold' | 'rainbow' | 'legend';
+export type PlantSkin = 'default'; // 花朵外觀統一，獎勵改為花種稀有度
 
 export interface Plant {
   stage: PlantStage;
