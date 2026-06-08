@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Plant Buddy - Serverless Water-Tracking Backend
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 10
+    MemorySize: 128
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref WaterTrackerTable
+
+Resources:
+
+  # --- HTTP API (with CORS for GitHub Pages) ---
+  WaterHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - "https://brian940916-commits.github.io"
+        AllowHeaders:
+          - "content-type"
+          - "x-user-id"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - OPTIONS
+
+  # --- Lambda Functions ---
+  RecordWaterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: water-record
+      Handler: record_water.handler
+      CodeUri: lambda/record_water/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WaterTrackerTable
+      Events:
+        RecordWater:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WaterHttpApi
+            Path: /water
+            Method: POST
+
+  GetStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: water-get-status
+      Handler: get_status.handler
+      CodeUri: lambda/get_status/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WaterTrackerTable
+      Events:
+        GetStatus:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WaterHttpApi
+            Path: /status
+            Method: GET
+
+  UpdateProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: water-update-profile
+      Handler: update_profile.handler
+      CodeUri: lambda/update_profile/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WaterTrackerTable
+      Events:
+        UpdateProfile:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WaterHttpApi
+            Path: /profile
+            Method: PUT
+
+  # --- DynamoDB ---
+  WaterTrackerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WaterTracker
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: itemType
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: itemType
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  ApiUrl:
+    Description: "HTTP API base URL"
+    Value: !Sub "https://${WaterHttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  TableName:
+    Description: "DynamoDB table name"
+    Value: !Ref WaterTrackerTable
