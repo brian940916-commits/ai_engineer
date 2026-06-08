@@ -5,6 +5,7 @@ import { PlantView } from './PlantView';
 import { ProgressBar } from './ProgressBar';
 import { QuickAdd } from './QuickAdd';
 import { HistoryStrip } from './HistoryStrip';
+import { WaterDrop } from './WaterDrop';
 
 interface Props {
   status: StatusResponse;
@@ -19,7 +20,16 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
 
   // Grow-bounce whenever today's total increases (design reward on logging water).
   const [bouncing, setBouncing] = useState(false);
+  const [showWater, setShowWater] = useState(false);
   const prevTotal = useRef(today.totalMl);
+
+  // Play the water-drop splash immediately on tap (optimistic), then log.
+  const handleAddWithAnim = (ml: number) => {
+    setShowWater(false);
+    requestAnimationFrame(() => setShowWater(true));
+    window.setTimeout(() => setShowWater(false), 950);
+    onAdd(ml);
+  };
   useEffect(() => {
     if (today.totalMl > prevTotal.current) {
       setBouncing(false);
@@ -48,6 +58,7 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
       )}
 
       <div className="plant-hero-wrap">
+        {showWater && <WaterDrop />}
         <div className={`plant-hero${bouncing ? ' bounce' : ''}`}>
           <PlantView plant={plant} />
         </div>
@@ -58,7 +69,7 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
       </div>
 
       <div className="card">
-        <QuickAdd onAdd={onAdd} disabled={busy} />
+        <QuickAdd onAdd={handleAddWithAnim} disabled={busy} />
       </div>
 
       <div className="card">

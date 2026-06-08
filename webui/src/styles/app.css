@@ -117,6 +117,7 @@ button {
   display: flex;
   justify-content: center;
   margin: 6px 0 2px;
+  position: relative;
 }
 
 .plant-hero {
@@ -931,5 +932,68 @@ button {
   .newday__yesterday,
   .newday__btn {
     animation: none;
+  }
+}
+
+/* ── water-drop splash (feature 5) ─────────────────────────── */
+.water-drops {
+  position: absolute;
+  left: 50%;
+  top: -80px;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.water-drop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: dropFall 0.6s ease-in var(--delay, 0s) forwards;
+}
+
+@keyframes dropFall {
+  0% {
+    transform: translate(var(--x, 0), 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x, 0), 170px);
+    opacity: 0;
+  }
+}
+
+.water-ripple {
+  position: absolute;
+  top: 170px;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--water);
+  border-radius: 50%;
+  opacity: 0;
+  animation: rippleOut 0.35s ease-out var(--ripple-delay, 0.5s) forwards;
+}
+
+@keyframes rippleOut {
+  0% {
+    transform: translateX(var(--x, 0)) scale(0.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(var(--x, 0)) scale(1.8);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-drops {
+    display: none;
   }
 }
