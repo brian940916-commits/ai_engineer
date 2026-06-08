@@ -5,83 +5,58 @@ interface Props {
   disabled?: boolean;
 }
 
-const PRESETS = [200, 300, 500];
-
-function Drop() {
-  return (
-    <svg className="drop-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 2.5 C7 9 5 12.5 5 15.5 a7 7 0 0 0 14 0 C19 12.5 17 9 12 2.5 Z" />
-    </svg>
-  );
-}
-
+// Quick-record row + custom amount. Recreated from the design handoff's QuickAdd.
 export function QuickAdd({ onAdd, disabled }: Props) {
-  const [custom, setCustom] = useState(false);
-  const [value, setValue] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [showCustom, setShowCustom] = useState(false);
+  const [val, setVal] = useState('');
 
-  function submitCustom() {
-    const ml = Number(value);
-    if (!Number.isInteger(ml) || ml < 1 || ml > 2000) {
-      setError('請輸入 1–2000 之間的整數');
-      return;
+  const submit = () => {
+    const n = parseInt(val, 10);
+    if (n > 0 && n <= 2000) {
+      onAdd(n);
+      setVal('');
+      setShowCustom(false);
     }
-    setError(null);
-    onAdd(ml);
-    setValue('');
-    setCustom(false);
-  }
+  };
 
   return (
-    <div className="quickadd">
-      <div className="quickadd__row">
-        {PRESETS.map((ml) => (
-          <button
-            key={ml}
-            type="button"
-            className="btn btn--primary quickadd__btn"
-            onClick={() => onAdd(ml)}
-            disabled={disabled}
-          >
-            <Drop />+{ml}
+    <div>
+      <div className="section-label">快速記錄</div>
+      <div className="qa-row">
+        {[200, 300, 500].map((ml) => (
+          <button key={ml} className="add-btn" onClick={() => onAdd(ml)} disabled={disabled}>
+            💧 +{ml}
           </button>
         ))}
         <button
-          type="button"
-          className="btn btn--secondary quickadd__btn"
-          onClick={() => setCustom((c) => !c)}
+          className={`add-btn ${showCustom ? 'active-custom' : ''}`}
+          onClick={() => setShowCustom((v) => !v)}
           disabled={disabled}
-          aria-expanded={custom}
+          aria-expanded={showCustom}
         >
           自訂
         </button>
       </div>
-
-      {custom && (
-        <div className="quickadd__custom">
+      {showCustom && (
+        <div className="qa-custom">
           <input
+            className="custom-input"
             type="number"
             inputMode="numeric"
+            placeholder="輸入 ml"
             min={1}
             max={2000}
-            value={value}
-            placeholder="毫升 (1–2000)"
-            aria-label="自訂喝水量（毫升）"
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submitCustom()}
+            value={val}
             autoFocus
+            aria-label="自訂喝水量（毫升）"
+            onChange={(e) => setVal(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submit()}
           />
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={submitCustom}
-            disabled={disabled}
-          >
-            加入
+          <button className="confirm-btn" onClick={submit} disabled={disabled}>
+            確認
           </button>
         </div>
       )}
-      {error && <p className="field-error">{error}</p>}
     </div>
   );
 }

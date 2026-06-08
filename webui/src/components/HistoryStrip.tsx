@@ -13,39 +13,34 @@ function weekday(date: string): string {
   return WEEKDAYS[new Date(y, m - 1, d).getDay()];
 }
 
-// A little row of bars, like seedlings in a garden. Height = that day's progress
-// (capped at the goal); a day that met its goal is filled green.
+// 7-day mini bar chart. Recreated from the design handoff's HistoryStrip, fed by
+// the real GET /status history (the prototype used fake data).
 export function HistoryStrip({ history }: Props) {
   if (history.length === 0) return null;
   const days = [...history].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
   const today = localToday();
 
   return (
-    <section className="history" aria-label="近 7 日喝水紀錄">
-      <h2 className="history__title">近 7 日</h2>
-      <div className="history__bars">
+    <div>
+      <div className="section-label">近7天</div>
+      <div className="hist-bars">
         {days.map((d) => {
-          const reached = d.progress >= 1;
-          const heightPct = Math.max(6, Math.min(d.progress, 1) * 100);
+          const pct = d.goalMl > 0 ? Math.min(d.totalMl / d.goalMl, 1) : 0;
+          const met = pct >= 1;
           const isToday = d.date === today;
+          const barH = Math.max(pct * 46, 5);
           return (
-            <div
-              key={d.date}
-              className={`history__day ${isToday ? 'is-today' : ''}`}
-              title={`${d.date}：${d.totalMl}/${d.goalMl} ml`}
-            >
-              <div className="history__bar-track">
-                <div
-                  className={`history__bar ${reached ? 'is-reached' : ''}`}
-                  style={{ height: `${heightPct}%` }}
-                  aria-label={`${d.date} ${Math.round(d.progress * 100)}%`}
-                />
-              </div>
-              <span className="history__label">{weekday(d.date)}</span>
+            <div key={d.date} className="hist-day" title={`${d.date}：${d.totalMl}/${d.goalMl} ml`}>
+              <div
+                className={`hist-bar ${met ? 'is-met' : ''} ${isToday ? 'is-today' : ''} ${isToday && !met ? 'is-unmet' : ''}`}
+                style={{ height: barH }}
+                aria-label={`${d.date} ${Math.round((d.goalMl > 0 ? d.totalMl / d.goalMl : 0) * 100)}%`}
+              />
+              <span className={`hist-label ${isToday ? 'is-today' : ''}`}>{isToday ? '今' : weekday(d.date)}</span>
             </div>
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

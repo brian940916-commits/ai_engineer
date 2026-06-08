@@ -1,35 +1,38 @@
 interface Props {
   totalMl: number;
   goalMl: number;
-  progress: number; // 0.0+ from the API
 }
 
-// Water-fill metaphor: a rounded track that fills with the aqua accent, and
-// celebrates (green/gold) once the goal is met. Exposes progressbar semantics.
-export function ProgressBar({ totalMl, goalMl, progress }: Props) {
-  const pct = Math.round(progress * 100);
-  const fillWidth = `${Math.min(progress, 1) * 100}%`;
-  const reached = progress >= 1;
+// Water-fill progress with shimmer; celebrates (green) at the goal.
+// Recreated from the design handoff's WaterProgress.
+export function ProgressBar({ totalMl, goalMl }: Props) {
+  const pct = goalMl > 0 ? Math.min(totalMl / goalMl, 1) : 0;
+  const disp = goalMl > 0 ? Math.round((totalMl / goalMl) * 100) : 0;
+  const done = pct >= 1;
 
   return (
-    <div className="progress">
-      <div className="progress__numbers">
-        <span className="progress__count">
-          {totalMl} <span className="progress__unit">/ {goalMl} ml</span>
-        </span>
-        <span className={`progress__pct ${reached ? 'is-reached' : ''}`}>{pct}%</span>
+    <div>
+      <div className="prog-head">
+        <span className="prog-head__label">今日進度</span>
+        <div>
+          <span className={`prog-head__num ${done ? 'is-done' : ''}`}>{totalMl.toLocaleString()}</span>
+          <span className="prog-head__goal"> / {goalMl.toLocaleString()} ml</span>
+        </div>
       </div>
       <div
-        className={`progress__track ${reached ? 'is-reached' : ''}`}
+        className="prog-track"
         role="progressbar"
         aria-valuenow={totalMl}
         aria-valuemin={0}
         aria-valuemax={goalMl}
         aria-label="今日喝水進度"
       >
-        <div className="progress__fill" style={{ width: fillWidth }}>
-          <span className="progress__wave" aria-hidden="true" />
-        </div>
+        <div className={`prog-fill ${done ? 'is-done' : ''}`} style={{ width: `${pct * 100}%` }} />
+        {pct > 0.06 && <div className="prog-shimmer" />}
+      </div>
+      <div className="prog-foot">
+        <span className={`prog-foot__pct ${done ? 'is-done' : ''}`}>{done ? '✓ 今日達標！' : `${disp}%`}</span>
+        <span className="prog-foot__goal">目標 {goalMl.toLocaleString()} ml</span>
       </div>
     </div>
   );

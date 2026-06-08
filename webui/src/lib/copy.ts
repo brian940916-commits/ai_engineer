@@ -6,11 +6,18 @@ import type { PlantMood, PlantStage } from '../types';
 
 export function greeting(nickname: string | null): string {
   const hour = new Date().getHours();
-  const part = hour < 11 ? '早安' : hour < 18 ? '午安' : '晚安';
   const name = nickname ? `，${nickname}` : '';
-  const emoji = hour < 11 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
-  return `${part}${name} ${emoji}`;
+  if (hour >= 5 && hour < 12) return `早安${name} ☀️`;
+  if (hour >= 12 && hour < 18) return `午安${name} 🌤`;
+  if (hour >= 18 && hour < 22) return `晚安${name} 🌙`;
+  return `深夜了${name} ⭐`;
 }
+
+// Home-screen alert banner shown for the two driest moods (design handoff).
+export const MOOD_ALERT: Record<'thirsty' | 'wilting', { emoji: string; text: string }> = {
+  thirsty: { emoji: '🥺', text: '已超過4小時沒喝水' },
+  wilting: { emoji: '😢', text: '植物快撐不住了！趕快喝水～' },
+};
 
 export const MOOD_CAPTION: Record<PlantMood, string> = {
   sleepy: '小植物在等你的第一杯水 💧',

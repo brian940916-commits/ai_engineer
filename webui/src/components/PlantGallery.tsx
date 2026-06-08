@@ -10,9 +10,7 @@ const MOODS: PlantMood[] = ['sleepy', 'happy', 'ok', 'thirsty', 'wilting'];
 export function PlantGallery() {
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
-      <h1 style={{ fontFamily: 'var(--font-display)', textAlign: 'center' }}>
-        Plant preview — stage × mood
-      </h1>
+      <h1 style={{ textAlign: 'center', fontWeight: 800 }}>Plant preview — stage × mood</h1>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${MOODS.length}, 1fr)`, gap: 8 }}>
         {STAGES.flatMap((stage) =>
           MOODS.map((mood) => (
@@ -24,13 +22,13 @@ export function PlantGallery() {
                 borderRadius: 16,
                 padding: 8,
                 textAlign: 'center',
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: 'var(--shadow)',
               }}
             >
-              <div style={{ width: 120, margin: '0 auto' }}>
+              <div style={{ width: 104, height: 156, margin: '0 auto' }}>
                 <PlantView plant={{ stage, mood, progress: 0 }} />
               </div>
-              <figcaption style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              <figcaption style={{ fontSize: 12, color: 'var(--muted)' }}>
                 {STAGE_LABEL[stage]} · {MOOD_LABEL[mood]}
               </figcaption>
             </figure>

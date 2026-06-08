@@ -1,249 +1,298 @@
-import { useEffect, useRef, useState } from 'react';
+import type { JSX } from 'react';
 import type { Plant, PlantMood, PlantStage } from '../types';
 import { MOOD_LABEL, STAGE_LABEL } from '../lib/copy';
+
+// Faithful port of the design handoff's PlantSVG (plant-buddy-plants.jsx):
+// a potted plant character, 5 growth stages × 5 moods. Stage = foliage,
+// mood = face + CSS filter + leaf droop. stage/mood come from the API and are
+// never recomputed here (single source of truth, per 01-system-architecture.md).
+
+const C = {
+  leafGreen: '#5FB98E',
+  leafDark: '#3D9B70',
+  leafMuted: '#AECA9B',
+  stemGreen: '#4AAF7A',
+  stemMuted: '#90A880',
+  potTerra: '#E0A07A',
+  potRim: '#E8B090',
+  potShadow: '#C07850',
+  soil: '#7A5040',
+  soilLight: '#9A6850',
+  eye: '#4A4039',
+  muted: '#9A9087',
+  flowerPink: '#F890A8',
+  flowerLight: '#FDB5C8',
+  flowerGold: '#F6C95B',
+  flowerAmber: '#F6A030',
+  budPink: '#F4B0C4',
+  budDeep: '#F090AA',
+  water: '#6FC8E0',
+  sun: '#F6C95B',
+  alert: '#E8907C',
+};
 
 interface Props {
   plant: Plant;
 }
 
-// One illustration per growth STAGE (foliage), with MOOD applied as a face swap
-// plus CSS treatment (droop / desaturation / overlays). This keeps it to ~5 core
-// drawings instead of 25. Stage and mood always come from the API — never
-// recomputed here (single source of truth, per 01-system-architecture.md).
 export function PlantView({ plant }: Props) {
-  const { stage, mood } = plant;
-  const levelUp = useLevelUp(stage);
-
   return (
     <div
-      className={[
-        'plant',
-        `plant--stage-${stage}`,
-        `plant--mood-${mood}`,
-        levelUp ? 'plant--levelup' : '',
-      ]
-        .join(' ')
-        .trim()}
       role="img"
-      aria-label={`小植物：${STAGE_LABEL[stage]}、${MOOD_LABEL[mood]}`}
+      aria-label={`小植物：${STAGE_LABEL[plant.stage]}、${MOOD_LABEL[plant.mood]}`}
+      style={{ width: '100%', height: '100%' }}
     >
-      <svg viewBox="0 0 200 240" className="plant__svg" aria-hidden="true">
-        {/* ground shadow */}
-        <ellipse cx="100" cy="232" rx="62" ry="9" className="plant__shadow" />
-
-        {/* foliage (stage) — grows up out of the pot; droops on dry moods */}
-        <g className="plant__foliage">{Foliage(stage)}</g>
-
-        {/* pot (over the foliage base) */}
-        <g className="plant__pot">
-          <path
-            className="pot"
-            d="M58 168 L142 168 L132 224 Q131 230 124 230 L76 230 Q69 230 68 224 Z"
-          />
-          <rect className="pot-rim" x="50" y="150" width="100" height="22" rx="9" />
-          <ellipse className="soil" cx="100" cy="156" rx="44" ry="7" />
-        </g>
-
-        {/* face (mood) on the pot belly */}
-        <g className="plant__face">{Face(mood)}</g>
-
-        {/* mood overlays */}
-        {Overlays(mood)}
-      </svg>
+      <PlantSVG stage={plant.stage} mood={plant.mood} />
     </div>
   );
 }
 
-// --- Foliage per growth stage -------------------------------------------------
+function PlantSVG({ stage, mood }: { stage: PlantStage; mood: PlantMood }) {
+  const wilting = mood === 'wilting';
+  const thirsty = mood === 'thirsty';
+  const sleepy = mood === 'sleepy';
+  const happy = mood === 'happy';
 
-function Foliage(stage: PlantStage) {
-  switch (stage) {
-    case 'seed':
-      return (
-        <g>
-          <path className="stem" d="M100 152 L100 142" />
-          <ellipse className="leaf" cx="100" cy="138" rx="6" ry="10" />
-        </g>
-      );
-    case 'sprout':
-      return (
-        <g>
-          <path className="stem" d="M100 152 L100 120" />
-          <ellipse className="leaf" cx="84" cy="120" rx="15" ry="9" transform="rotate(-32 84 120)" />
-          <ellipse className="leaf" cx="116" cy="120" rx="15" ry="9" transform="rotate(32 116 120)" />
-        </g>
-      );
-    case 'growing':
-      return (
-        <g>
-          <path className="stem" d="M100 152 L100 92" />
-          <ellipse className="leaf" cx="80" cy="138" rx="17" ry="10" transform="rotate(-30 80 138)" />
-          <ellipse className="leaf" cx="120" cy="138" rx="17" ry="10" transform="rotate(30 120 138)" />
-          <ellipse className="leaf" cx="78" cy="112" rx="18" ry="11" transform="rotate(-28 78 112)" />
-          <ellipse className="leaf" cx="122" cy="112" rx="18" ry="11" transform="rotate(28 122 112)" />
-          <ellipse className="leaf" cx="100" cy="90" rx="13" ry="18" />
-        </g>
-      );
-    case 'budding':
-      return (
-        <g>
-          <path className="stem" d="M100 152 L100 70" />
-          <ellipse className="leaf" cx="78" cy="134" rx="18" ry="11" transform="rotate(-30 78 134)" />
-          <ellipse className="leaf" cx="122" cy="134" rx="18" ry="11" transform="rotate(30 122 134)" />
-          <ellipse className="leaf" cx="76" cy="108" rx="19" ry="11" transform="rotate(-26 76 108)" />
-          <ellipse className="leaf" cx="124" cy="108" rx="19" ry="11" transform="rotate(26 124 108)" />
-          {/* closed bud */}
-          <path className="bud-sepal" d="M100 84 Q86 80 90 64 L110 64 Q114 80 100 84 Z" />
-          <path className="bud" d="M100 76 Q88 66 100 48 Q112 66 100 76 Z" />
-        </g>
-      );
-    case 'blooming':
-      return (
-        <g>
-          <path className="stem" d="M100 152 L100 72" />
-          <ellipse className="leaf" cx="78" cy="134" rx="18" ry="11" transform="rotate(-30 78 134)" />
-          <ellipse className="leaf" cx="122" cy="134" rx="18" ry="11" transform="rotate(30 122 134)" />
-          <ellipse className="leaf" cx="76" cy="108" rx="19" ry="11" transform="rotate(-26 76 108)" />
-          <ellipse className="leaf" cx="124" cy="108" rx="19" ry="11" transform="rotate(26 124 108)" />
-          {/* open flower */}
-          <g className="flower">
-            {[0, 60, 120, 180, 240, 300].map((deg) => (
-              <ellipse
-                key={deg}
-                className="petal"
-                cx="100"
-                cy="46"
-                rx="11"
-                ry="18"
-                transform={`rotate(${deg} 100 64)`}
-              />
-            ))}
-            <circle className="flower-core" cx="100" cy="64" r="11" />
-          </g>
-        </g>
-      );
-  }
-}
+  const lf = wilting ? C.leafMuted : C.leafGreen;
+  const ld = wilting ? '#8CAA7C' : C.leafDark;
+  const st = wilting ? C.stemMuted : C.stemGreen;
+  const droop = wilting ? 18 : thirsty ? 9 : 0;
 
-// --- Face per mood (eyes + mouth on the pot belly) ----------------------------
+  const svgFilter = wilting
+    ? 'saturate(42%) sepia(18%)'
+    : sleepy
+      ? 'saturate(70%) brightness(95%)'
+      : 'none';
 
-function Face(mood: PlantMood) {
-  const eyesOpen = (
+  const Pot = () => (
+    <g>
+      <rect x="16" y="114" width="88" height="11" rx="5.5" fill={C.potRim} />
+      <path d="M22,125 L29,161 Q60,168 91,161 L98,125 Z" fill={C.potTerra} />
+      <path d="M87,126 L92,160 Q98,156 98,126Z" fill={C.potShadow} opacity="0.18" />
+      <path d="M22,126 L25,148 Q22.5,137 22,126Z" fill="white" opacity="0.12" />
+      <ellipse cx="60" cy="115" rx="37" ry="7" fill={C.soil} />
+      <ellipse cx="57" cy="113" rx="28" ry="4.5" fill={C.soilLight} opacity="0.5" />
+      <circle cx="46" cy="116" r="2" fill={C.soil} opacity="0.35" />
+      <circle cx="73" cy="115" r="1.5" fill={C.soil} opacity="0.3" />
+    </g>
+  );
+
+  const Face = ({ cx = 60, cy = 75, s = 1 }: { cx?: number; cy?: number; s?: number }) => {
+    const e1 = cx - 6 * s;
+    const e2 = cx + 6 * s;
+    const ey = cy;
+    const my = cy + 5.5 * s;
+    const ec = C.eye;
+    if (sleepy)
+      return (
+        <g>
+          <path d={`M${e1 - 3 * s},${ey} Q${e1},${ey - 2 * s} ${e1 + 3 * s},${ey}`} stroke={ec} strokeWidth={1.8 * s} fill="none" strokeLinecap="round" />
+          <path d={`M${e2 - 3 * s},${ey} Q${e2},${ey - 2 * s} ${e2 + 3 * s},${ey}`} stroke={ec} strokeWidth={1.8 * s} fill="none" strokeLinecap="round" />
+          <path d={`M${cx - 4 * s},${my} Q${cx},${my + 3 * s} ${cx + 4 * s},${my}`} stroke={ec} strokeWidth={1.5 * s} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    if (happy)
+      return (
+        <g>
+          <circle cx={e1} cy={ey} r={2.5 * s} fill={ec} />
+          <circle cx={e1 + 0.8 * s} cy={ey - 0.8 * s} r={0.8 * s} fill="white" />
+          <circle cx={e2} cy={ey} r={2.5 * s} fill={ec} />
+          <circle cx={e2 + 0.8 * s} cy={ey - 0.8 * s} r={0.8 * s} fill="white" />
+          <path d={`M${cx - 6 * s},${my} Q${cx},${my + 5 * s} ${cx + 6 * s},${my}`} stroke={ec} strokeWidth={1.8 * s} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    if (thirsty)
+      return (
+        <g>
+          <path d={`M${e1 - 3 * s},${ey - 1.5 * s} L${e1},${ey + 1.5 * s} L${e1 + 3 * s},${ey - 1.5 * s}`} stroke={ec} strokeWidth={1.8 * s} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={`M${e2 - 3 * s},${ey - 1.5 * s} L${e2},${ey + 1.5 * s} L${e2 + 3 * s},${ey - 1.5 * s}`} stroke={ec} strokeWidth={1.8 * s} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={`M${cx - 4 * s},${my + 1 * s} Q${cx},${my - 1 * s} ${cx + 4 * s},${my + 1 * s}`} stroke={ec} strokeWidth={1.5 * s} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    if (wilting)
+      return (
+        <g>
+          <path d={`M${e1 - 3 * s},${ey + 2 * s} Q${e1},${ey - 0.5 * s} ${e1 + 3 * s},${ey + 2 * s}`} stroke={ec} strokeWidth={1.8 * s} fill="none" strokeLinecap="round" />
+          <path d={`M${e2 - 3 * s},${ey + 2 * s} Q${e2},${ey - 0.5 * s} ${e2 + 3 * s},${ey + 2 * s}`} stroke={ec} strokeWidth={1.8 * s} fill="none" strokeLinecap="round" />
+          <path d={`M${cx - 5 * s},${my + 2 * s} Q${cx},${my - 1 * s} ${cx + 5 * s},${my + 2 * s}`} stroke={ec} strokeWidth={1.5 * s} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    // ok / default
+    return (
+      <g>
+        <circle cx={e1} cy={ey} r={2 * s} fill={ec} />
+        <circle cx={e2} cy={ey} r={2 * s} fill={ec} />
+        <path d={`M${cx - 4.5 * s},${my} Q${cx},${my + 3.5 * s} ${cx + 4.5 * s},${my}`} stroke={ec} strokeWidth={1.5 * s} fill="none" strokeLinecap="round" />
+      </g>
+    );
+  };
+
+  const Overlay = ({ cx = 60, cy = 75 }: { cx?: number; cy?: number }) => {
+    if (sleepy)
+      return (
+        <g opacity="0.8">
+          <text x={cx + 13} y={cy - 17} fontSize="9" fill={C.muted} fontFamily="sans-serif">z</text>
+          <text x={cx + 18} y={cy - 26} fontSize="7" fill={C.muted} fontFamily="sans-serif" opacity="0.8">z</text>
+          <text x={cx + 22} y={cy - 34} fontSize="5.5" fill={C.muted} fontFamily="sans-serif" opacity="0.6">z</text>
+        </g>
+      );
+    if (thirsty)
+      return (
+        <g>
+          <path d={`M${cx + 14},${cy + 2} Q${cx + 17},${cy + 7} ${cx + 14},${cy + 11} Q${cx + 11},${cy + 11} ${cx + 11},${cy + 7} Q${cx + 11},${cy + 2} ${cx + 14},${cy + 2}Z`} fill={C.water} opacity="0.8" />
+          <ellipse cx={cx + 12.5} cy={cy + 6} rx="1" ry="1.5" fill="white" opacity="0.5" />
+        </g>
+      );
+    if (wilting)
+      return (
+        <text x={cx - 5} y={cy - 22} fontSize="16" fill={C.alert} fontWeight="bold" fontFamily="sans-serif" opacity="0.85">!</text>
+      );
+    if (stage === 'blooming')
+      return (
+        <g>
+          <path d="M28,26 L29,22 L30,26 L26,24 L32,24Z" fill={C.sun} opacity="0.9" />
+          <path d="M93,30 L94,26 L95,30 L91,28 L97,28Z" fill={C.sun} opacity="0.8" />
+          <circle cx="22" cy="42" r="2.5" fill={C.water} opacity="0.7" />
+          <circle cx="99" cy="35" r="2" fill={C.flowerPink} opacity="0.7" />
+          <circle cx="14" cy="56" r="1.5" fill={C.sun} opacity="0.55" />
+          <circle cx="107" cy="59" r="1.5" fill={C.water} opacity="0.55" />
+        </g>
+      );
+    if (happy && stage === 'budding')
+      return (
+        <g>
+          <path d="M24,56 L25,52 L26,56 L22,54 L28,54Z" fill={C.sun} opacity="0.8" />
+          <circle cx="97" cy="62" r="2" fill={C.water} opacity="0.65" />
+        </g>
+      );
+    return null;
+  };
+
+  const LowerLeaves = ({ y = 108, big = false }: { y?: number; big?: boolean }) => {
+    const o = big ? 4 : 0;
+    return (
+      <>
+        <g style={{ transformOrigin: `60px ${y}px`, transform: `rotate(${-droop * 0.9}deg)` }}>
+          <path d={`M60,${y} C${40 - o},${y - 12} ${24 - o},${y - 8} ${26 - o},${y + 4} C${28 - o},${y + 16} ${50 - o},${y + 12} 60,${y}Z`} fill={lf} />
+        </g>
+        <g style={{ transformOrigin: `60px ${y}px`, transform: `rotate(${droop * 0.9}deg)` }}>
+          <path d={`M60,${y} C${80 + o},${y - 12} ${96 + o},${y - 8} ${94 + o},${y + 4} C${92 + o},${y + 16} ${70 + o},${y + 12} 60,${y}Z`} fill={lf} />
+        </g>
+      </>
+    );
+  };
+
+  const UpperLeaves = ({ y = 84 }: { y?: number }) => (
     <>
-      <circle className="eye" cx="85" cy="190" r="4" />
-      <circle className="eye" cx="115" cy="190" r="4" />
+      <g style={{ transformOrigin: `60px ${y}px`, transform: `rotate(${-droop * 0.4}deg)` }}>
+        <path d={`M59,${y + 1} C46,${y - 11} 34,${y - 9} 36,${y + 3} C38,${y + 15} 54,${y + 11} 59,${y + 1}Z`} fill={lf} />
+      </g>
+      <g style={{ transformOrigin: `60px ${y}px`, transform: `rotate(${droop * 0.4}deg)` }}>
+        <path d={`M61,${y + 1} C74,${y - 11} 86,${y - 9} 84,${y + 3} C82,${y + 15} 66,${y + 11} 61,${y + 1}Z`} fill={lf} />
+      </g>
     </>
   );
-  const eyesClosed = (
-    <>
-      <path className="eye-line" d="M79 190 Q85 195 91 190" />
-      <path className="eye-line" d="M109 190 Q115 195 121 190" />
-    </>
-  );
-  const eyesSad = (
-    <>
-      <circle className="eye" cx="85" cy="191" r="4" />
-      <circle className="eye" cx="115" cy="191" r="4" />
-      <path className="brow" d="M79 183 Q85 181 91 184" />
-      <path className="brow" d="M109 184 Q115 181 121 183" />
-    </>
-  );
 
-  switch (mood) {
-    case 'sleepy':
-      return (
-        <>
-          {eyesClosed}
-          <path className="mouth" d="M94 202 Q100 206 106 202" />
-        </>
-      );
-    case 'happy':
-      return (
-        <>
-          {eyesOpen}
-          <path className="mouth" d="M86 200 Q100 213 114 200" />
-        </>
-      );
-    case 'ok':
-      return (
-        <>
-          {eyesOpen}
-          <path className="mouth" d="M91 202 Q100 208 109 202" />
-        </>
-      );
-    case 'thirsty':
-      return (
-        <>
-          {eyesOpen}
-          <path className="brow" d="M79 184 Q85 182 91 184" />
-          <path className="brow" d="M109 184 Q115 182 121 184" />
-          <path className="mouth" d="M92 204 Q96 201 100 204 Q104 207 108 204" />
-        </>
-      );
-    case 'wilting':
-      return (
-        <>
-          {eyesSad}
-          <path className="mouth" d="M89 206 Q100 198 111 206" />
-        </>
-      );
-  }
-}
-
-// --- Mood overlays ------------------------------------------------------------
-
-function Overlays(mood: PlantMood) {
-  switch (mood) {
-    case 'sleepy':
-      return (
-        <text className="overlay-zzz" x="138" y="150">
-          Z z z
-        </text>
-      );
-    case 'happy':
-      return (
-        <>
-          <Sparkle x={150} y={96} s={1} />
-          <path className="droplet" d="M150 168 q7 9 0 14 q-7 -5 0 -14 Z" />
-        </>
-      );
-    case 'thirsty':
-      return <path className="sweat" d="M128 182 q5 7 0 11 q-5 -4 0 -11 Z" />;
-    case 'wilting':
-      return (
-        <g className="overlay-alert">
-          <circle cx="146" cy="146" r="13" />
-          <text x="146" y="152">
-            ！
-          </text>
-        </g>
-      );
-    case 'ok':
-      return null;
-  }
-}
-
-function Sparkle({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
-  return (
-    <path
-      className="sparkle"
-      transform={`translate(${x} ${y}) scale(${s})`}
-      d="M0 -9 Q1.5 -1.5 9 0 Q1.5 1.5 0 9 Q-1.5 1.5 -9 0 Q-1.5 -1.5 0 -9 Z"
-    />
-  );
-}
-
-// Briefly flag a stage change so CSS can play a grow-bounce reward.
-function useLevelUp(stage: PlantStage): boolean {
-  const prev = useRef(stage);
-  const [active, setActive] = useState(false);
-  useEffect(() => {
-    if (prev.current !== stage) {
-      prev.current = stage;
-      setActive(true);
-      const t = window.setTimeout(() => setActive(false), 700);
-      return () => clearTimeout(t);
+  const renderBody = (): JSX.Element | null => {
+    switch (stage) {
+      case 'seed':
+        return (
+          <>
+            <ellipse cx="60" cy="110" rx="14" ry="10.5" fill={lf} />
+            <ellipse cx="57" cy="108" rx="6" ry="4" fill={ld} opacity="0.15" />
+            <Face cx={60} cy={103} />
+            <Overlay cx={60} cy={103} />
+          </>
+        );
+      case 'sprout':
+        return (
+          <>
+            <line x1="60" y1="115" x2="60" y2="96" stroke={st} strokeWidth="3" strokeLinecap="round" />
+            <g style={{ transformOrigin: '60px 107px', transform: `rotate(${-droop}deg)` }}>
+              <path d="M60,101 C48,89 34,89 36,99 C38,109 52,106 60,101Z" fill={lf} />
+              <path d="M60,101 C51,97 39,96 36,99" stroke={ld} strokeWidth="0.7" fill="none" opacity="0.4" />
+            </g>
+            <g style={{ transformOrigin: '60px 107px', transform: `rotate(${droop}deg)` }}>
+              <path d="M60,101 C72,89 86,89 84,99 C82,109 68,106 60,101Z" fill={lf} />
+              <path d="M60,101 C69,97 81,96 84,99" stroke={ld} strokeWidth="0.7" fill="none" opacity="0.4" />
+            </g>
+            <Face cx={60} cy={89} />
+            <Overlay cx={60} cy={89} />
+          </>
+        );
+      case 'growing':
+        return (
+          <>
+            <line x1="60" y1="115" x2="60" y2="75" stroke={st} strokeWidth="3.5" strokeLinecap="round" />
+            <g style={{ transformOrigin: '60px 103px', transform: `rotate(${-droop * 0.8}deg)` }}>
+              <path d="M60,106 C42,97 28,102 30,114 C32,125 50,121 60,106Z" fill={ld} opacity="0.28" />
+            </g>
+            <g style={{ transformOrigin: '60px 103px', transform: `rotate(${droop * 0.8}deg)` }}>
+              <path d="M60,106 C78,97 92,102 90,114 C88,125 70,121 60,106Z" fill={ld} opacity="0.28" />
+            </g>
+            <g style={{ transformOrigin: '60px 93px', transform: `rotate(${-droop * 0.6}deg)` }}>
+              <path d="M59,96 C44,83 30,85 32,97 C34,109 52,106 59,96Z" fill={lf} />
+              <path d="M59,96 C48,91 36,91 32,97" stroke={ld} strokeWidth="0.8" fill="none" opacity="0.35" />
+            </g>
+            <g style={{ transformOrigin: '60px 93px', transform: `rotate(${droop * 0.6}deg)` }}>
+              <path d="M61,96 C76,83 90,85 88,97 C86,109 68,106 61,96Z" fill={lf} />
+              <path d="M61,96 C72,91 84,91 88,97" stroke={ld} strokeWidth="0.8" fill="none" opacity="0.35" />
+            </g>
+            <g style={{ transformOrigin: '60px 82px', transform: `rotate(${droop * 0.3}deg)` }}>
+              <path d="M60,83 C52,69 56,57 60,57 C64,57 68,69 60,83Z" fill={lf} />
+              <line x1="60" y1="81" x2="60" y2="59" stroke={ld} strokeWidth="0.8" opacity="0.35" />
+            </g>
+            <Face cx={60} cy={73} />
+            <Overlay cx={60} cy={73} />
+          </>
+        );
+      case 'budding':
+        return (
+          <>
+            <line x1="60" y1="115" x2="60" y2="60" stroke={st} strokeWidth="3.5" strokeLinecap="round" />
+            <LowerLeaves y={108} big={true} />
+            <UpperLeaves y={84} />
+            <ellipse cx="60" cy="53" rx="9" ry="14" fill={C.budPink} />
+            <ellipse cx="60" cy="51" rx="5.5" ry="9" fill={C.budDeep} opacity="0.4" />
+            <path d="M60,64 C52,63 48,56 52,53 C56,50 60,55 60,64Z" fill={lf} opacity="0.85" />
+            <path d="M60,64 C68,63 72,56 68,53 C64,50 60,55 60,64Z" fill={lf} opacity="0.85" />
+            <Face cx={60} cy={68} />
+            <Overlay cx={60} cy={68} />
+          </>
+        );
+      case 'blooming':
+        return (
+          <>
+            <line x1="60" y1="115" x2="60" y2="60" stroke={st} strokeWidth="3.5" strokeLinecap="round" />
+            <LowerLeaves y={108} big={true} />
+            <UpperLeaves y={84} />
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => {
+              const rad = (deg * Math.PI) / 180;
+              const px = 60 + 15 * Math.cos(rad);
+              const py = 42 + 15 * Math.sin(rad);
+              return (
+                <ellipse key={i} cx={px} cy={py} rx="8" ry="11" fill={i % 2 === 0 ? C.flowerPink : C.flowerLight} transform={`rotate(${deg},${px},${py})`} />
+              );
+            })}
+            <circle cx="60" cy="42" r="12" fill={C.flowerGold} />
+            <circle cx="60" cy="42" r="8" fill={C.flowerAmber} />
+            <Face cx={60} cy={42} s={0.82} />
+            <Overlay cx={60} cy={42} />
+          </>
+        );
+      default:
+        return null;
     }
-  }, [stage]);
-  return active;
+  };
+
+  return (
+    <svg
+      viewBox="0 0 120 180"
+      style={{ filter: svgFilter, overflow: 'visible', display: 'block', width: '100%', height: '100%' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <Pot />
+      {renderBody()}
+    </svg>
+  );
 }

@@ -90,7 +90,7 @@ export default function App() {
       <main className="app app--center">
         <div className="errorbox">
           <p>{error ?? '無法連線到伺服器'}</p>
-          <button type="button" className="btn btn--primary" onClick={() => void reload()}>
+          <button type="button" className="confirm-btn" onClick={() => void reload()}>
             重試
           </button>
         </div>
@@ -122,18 +122,47 @@ export default function App() {
         />
       )}
 
-      {celebrating && (
-        <div className="celebration" role="status" aria-live="assertive">
-          <div className="celebration__confetti" aria-hidden="true">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <span key={i} style={{ '--i': i } as React.CSSProperties} />
-            ))}
-          </div>
-          <p className="celebration__msg">{BLOOM_MESSAGE}</p>
-        </div>
-      )}
+      {celebrating && <Confetti />}
 
       <Toast toast={toast} />
     </main>
+  );
+}
+
+// Bloom celebration: gold banner + floating confetti. Recreated from the design
+// handoff's Confetti component.
+const CONFETTI_COLORS = ['#F6C95B', '#5FB98E', '#6FC8E0', '#F890A8', '#E0A07A'];
+
+function Confetti() {
+  const dots = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    x: 10 + Math.random() * 80,
+    y: 15 + Math.random() * 65,
+    size: 6 + Math.random() * 9,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    delay: (Math.random() * 0.5).toFixed(2),
+    dur: (1.2 + Math.random() * 0.9).toFixed(2),
+  }));
+  return (
+    <div className="celebrate-layer" role="status" aria-live="assertive">
+      <div className="celebrate-banner">{BLOOM_MESSAGE}</div>
+      {dots.map((d) => (
+        <div
+          key={d.id}
+          className="confetti-dot"
+          style={
+            {
+              left: `${d.x}%`,
+              top: `${d.y}%`,
+              width: d.size,
+              height: d.size,
+              background: d.color,
+              '--delay': `${d.delay}s`,
+              '--dur': `${d.dur}s`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </div>
   );
 }
