@@ -139,9 +139,14 @@ export function HomeScreen({
         {speech && (
           <SpeechBubble key={speech.key} text={speech.text} onClose={() => setSpeech(null)} />
         )}
-        <div className={`plant-hero${bouncing ? ' bounce' : ''}`}>
+        <button
+          type="button"
+          className={`plant-hero plant-hero--tap${bouncing ? ' bounce' : ''}`}
+          onClick={() => say(getPlantSpeech(plant.mood, 'tap'))}
+          aria-label="戳一下小植物"
+        >
           <PlantView plant={plant} skin={skin} />
-        </div>
+        </button>
       </div>
 
       <div className="card">
