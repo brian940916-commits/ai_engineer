@@ -152,6 +152,8 @@ export function SettingsScreen({
             // to 0, plant back to seed, and the new-day animation plays.
             const cur = parseInt(localStorage.getItem('plantBuddyDemoDayOffset') ?? '0', 10) || 0;
             localStorage.setItem('plantBuddyDemoDayOffset', String(cur + 1));
+            // Drop a forced mood so the fresh day's plant truly shows seed/sleepy.
+            localStorage.removeItem('plantBuddyDemoMood');
           })
         }
       >
