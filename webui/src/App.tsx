@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Screen } from './types';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { PlantSkin, Screen } from './types';
 import { useStatus } from './hooks/useStatus';
 import { useReminders } from './hooks/useReminders';
 import { HomeScreen } from './components/HomeScreen';
@@ -8,8 +8,11 @@ import { Toast, type ToastData } from './components/Toast';
 import { PlantGallery } from './components/PlantGallery';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { NewDayScreen } from './components/NewDayScreen';
+import { UnlockScreen } from './components/UnlockScreen';
 import { BLOOM_MESSAGE } from './lib/copy';
 import { localToday } from './lib/api';
+import { calcStreak, yesterday } from './lib/streak';
+import { MILESTONES, highestSkin, readUnlockedSkins, writeUnlockedSkins } from './lib/achievements';
 
 export default function App() {
   // Dev-only: ?preview renders the stage × mood gallery, no backend required.
@@ -27,7 +30,45 @@ export default function App() {
   const [newDaySeen, setNewDaySeen] = useState(
     () => localStorage.getItem('plantBuddyLastSeenDate') === localToday()
   );
+  const [unlockedSkins, setUnlockedSkins] = useState<PlantSkin[]>(() => readUnlockedSkins());
+  const [unlock, setUnlock] = useState<{ skin: PlantSkin; message: string } | null>(null);
+  const [lifelineTick, setLifelineTick] = useState(0);
   const toastId = useRef(0);
+
+  // Achievement streak (recomputed when status changes or a lifeline is used).
+  const streakInfo = useMemo(
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => (status ? calcStreak(status.history) : null),
+    [status, lifelineTick]
+  );
+  const currentSkin = highestSkin(unlockedSkins);
+
+  // Yesterday missed → the lifeline banner may offer a rescue.
+  const yesterdayMissed = useMemo(() => {
+    if (!status) return false;
+    const entry = status.history.find((h) => h.date === yesterday());
+    return !!entry && entry.progress < 1;
+  }, [status]);
+  const canUseLifeline = !!streakInfo && streakInfo.hasLifeline && yesterdayMissed;
+
+  const useLifeline = useCallback(() => {
+    localStorage.setItem('plantBuddyLifelineDate', yesterday());
+    setLifelineTick((t) => t + 1);
+  }, []);
+
+  // Unlock any milestone the current streak has reached but not yet unlocked.
+  useEffect(() => {
+    if (!streakInfo) return;
+    const newly = MILESTONES.filter(
+      (m) => streakInfo.current >= m.days && !unlockedSkins.includes(m.skin)
+    );
+    if (newly.length === 0) return;
+    const next = [...unlockedSkins, ...newly.map((m) => m.skin)];
+    writeUnlockedSkins(next);
+    setUnlockedSkins(next);
+    const top = newly[newly.length - 1];
+    setUnlock({ skin: top.skin, message: top.unlockMsg });
+  }, [streakInfo, unlockedSkins]);
 
   const showToast = useCallback((message: string, type: ToastData['type']) => {
     setToast({ id: ++toastId.current, message, type });
@@ -136,6 +177,10 @@ export default function App() {
         <HomeScreen
           status={status}
           busy={busy}
+          skin={currentSkin}
+          streak={streakInfo?.current ?? 0}
+          canUseLifeline={canUseLifeline}
+          onUseLifeline={useLifeline}
           onAdd={handleAdd}
           onOpenSettings={() => setScreen('settings')}
         />
@@ -155,6 +200,14 @@ export default function App() {
       )}
 
       {celebrating && <Confetti />}
+
+      {unlock && (
+        <UnlockScreen
+          skin={unlock.skin}
+          message={unlock.message}
+          onClose={() => setUnlock(null)}
+        />
+      )}
 
       <Toast toast={toast} />
     </main>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StatusResponse } from '../types';
+import type { PlantSkin, StatusResponse } from '../types';
 import { greeting, MOOD_ALERT, MOOD_CAPTION } from '../lib/copy';
 import { getPlantSpeech } from '../lib/plantSpeech';
 import { PlantView } from './PlantView';
@@ -13,11 +13,24 @@ import { DrinkTimeChart } from './DrinkTimeChart';
 interface Props {
   status: StatusResponse;
   busy: boolean;
+  skin: PlantSkin;
+  streak: number;
+  canUseLifeline: boolean;
+  onUseLifeline: () => void;
   onAdd: (amountMl: number) => void;
   onOpenSettings: () => void;
 }
 
-export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
+export function HomeScreen({
+  status,
+  busy,
+  skin,
+  streak,
+  canUseLifeline,
+  onUseLifeline,
+  onAdd,
+  onOpenSettings,
+}: Props) {
   const { profile, today, plant, history } = status;
   const alert = plant.mood === 'thirsty' || plant.mood === 'wilting' ? MOOD_ALERT[plant.mood] : null;
 
@@ -96,7 +109,10 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
   return (
     <>
       <div className="greeting">
-        <div className="greeting__hello">{greeting(profile.nickname)}</div>
+        <div className="greeting__hello">
+          {greeting(profile.nickname)}
+          {streak > 0 && <span className="streak-badge">🔥 {streak}天</span>}
+        </div>
         <div className="greeting__caption" aria-live="polite">
           {MOOD_CAPTION[plant.mood]}
         </div>
@@ -109,13 +125,22 @@ export function HomeScreen({ status, busy, onAdd, onOpenSettings }: Props) {
         </div>
       )}
 
+      {canUseLifeline && (
+        <div className="lifeline-banner">
+          <span>😮 昨天差一點！使用保命符？</span>
+          <button className="lifeline-banner__btn" onClick={onUseLifeline}>
+            用
+          </button>
+        </div>
+      )}
+
       <div className="plant-hero-wrap">
         {showWater && <WaterDrop />}
         {speech && (
           <SpeechBubble key={speech.key} text={speech.text} onClose={() => setSpeech(null)} />
         )}
         <div className={`plant-hero${bouncing ? ' bounce' : ''}`}>
-          <PlantView plant={plant} />
+          <PlantView plant={plant} skin={skin} />
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 export type PlantStage = 'seed' | 'sprout' | 'growing' | 'budding' | 'blooming';
 export type PlantMood = 'sleepy' | 'happy' | 'ok' | 'thirsty' | 'wilting';
+export type PlantSkin = 'default' | 'glow' | 'gold' | 'rainbow' | 'legend';
 
 export interface Plant {
   stage: PlantStage;
