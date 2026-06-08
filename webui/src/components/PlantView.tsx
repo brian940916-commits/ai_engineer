@@ -56,19 +56,24 @@ function PlantSVG({ stage, mood, skin }: { stage: PlantStage; mood: PlantMood; s
   const happy = mood === 'happy';
 
   // Gold-family skins recolour the foliage and flowers; glow/rainbow/legend
-  // visual treatment is applied via CSS on the wrapper (see app.css).
+  // visual treatment is applied via CSS on the wrapper (see app.css). An unlocked
+  // skin stays vivid across all moods — mood is still conveyed by leaf droop and
+  // the face, so a wilting gold plant droops but keeps its gold colour.
   const gold = skin === 'gold' || skin === 'legend';
+  const skinned = skin !== 'default';
 
-  const lf = wilting ? C.leafMuted : gold ? C.flowerGold : C.leafGreen;
-  const ld = wilting ? '#8CAA7C' : gold ? C.flowerAmber : C.leafDark;
-  const st = wilting ? C.stemMuted : gold ? '#E0A030' : C.stemGreen;
+  const lf = gold ? C.flowerGold : wilting ? C.leafMuted : C.leafGreen;
+  const ld = gold ? C.flowerAmber : wilting ? '#8CAA7C' : C.leafDark;
+  const st = gold ? '#E0A030' : wilting ? C.stemMuted : C.stemGreen;
   const droop = wilting ? 18 : thirsty ? 9 : 0;
 
-  const svgFilter = wilting
-    ? 'saturate(42%) sepia(18%)'
-    : sleepy
-      ? 'saturate(70%) brightness(95%)'
-      : 'none';
+  const svgFilter = skinned
+    ? 'none' // don't desaturate an earned skin
+    : wilting
+      ? 'saturate(42%) sepia(18%)'
+      : sleepy
+        ? 'saturate(70%) brightness(95%)'
+        : 'none';
 
   const Pot = () => (
     <g>
