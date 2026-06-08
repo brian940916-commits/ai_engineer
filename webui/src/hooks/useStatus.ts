@@ -40,7 +40,7 @@ export function useStatus() {
     setLoading(true);
     setError(null);
     try {
-      setStatus(await getStatus());
+      setStatus(await getStatus(31)); // a month of history (streaks + 7-day chart)
     } catch (e) {
       setError(e instanceof Error ? e.message : '無法連線到伺服器');
     } finally {

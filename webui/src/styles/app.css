@@ -348,7 +348,7 @@ button {
   display: flex;
   gap: 6px;
   align-items: flex-end;
-  height: 60px;
+  height: 96px;
 }
 
 .hist-day {
@@ -361,33 +361,51 @@ button {
   justify-content: flex-end;
 }
 
+.hist-amount {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  height: 12px;
+  line-height: 12px;
+}
+
+.hist-col {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  background: var(--track);
+  border-radius: 7px;
+  padding: 3px;
+}
+
 .hist-bar {
   width: 100%;
-  background: #d8ede5;
-  border-radius: 4px 4px 2px 2px;
-  transition: height 0.4s ease;
+  min-height: 4px;
+  background: #cfe7dc;
+  border-radius: 5px 5px 3px 3px;
+  transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .hist-bar.is-met {
-  background: var(--primary);
+  background: linear-gradient(180deg, #5fb98e, #3dd68c);
 }
 
 .hist-bar.is-today {
-  background: var(--water);
+  background: linear-gradient(180deg, #72d0e8, var(--water));
 }
 
-.hist-bar.is-today.is-unmet {
-  outline: 2px solid var(--water);
-  outline-offset: -2px;
+.hist-bar.is-today.is-met {
+  background: linear-gradient(180deg, #5fb98e, #3dd68c);
 }
 
 .hist-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 
 .hist-label.is-today {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--primary);
 }
 
