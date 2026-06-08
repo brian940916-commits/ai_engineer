@@ -20,6 +20,7 @@ interface Props {
   onUseLifeline: () => void;
   onAdd: (amountMl: number) => void;
   onOpenSettings: () => void;
+  onOpenGarden: () => void;
   onRefresh: () => void;
   onToast: (message: string, type: 'success' | 'error') => void;
 }
@@ -33,6 +34,7 @@ export function HomeScreen({
   onUseLifeline,
   onAdd,
   onOpenSettings,
+  onOpenGarden,
   onRefresh,
   onToast,
 }: Props) {
@@ -185,6 +187,10 @@ export function HomeScreen({
         <button className="footer-btn active">
           <span className="footer-icon">🌱</span>
           <span>主頁</span>
+        </button>
+        <button className="footer-btn" onClick={onOpenGarden}>
+          <span className="footer-icon">🌸</span>
+          <span>花田</span>
         </button>
         <button className="footer-btn" onClick={onOpenSettings}>
           <span className="footer-icon">⚙️</span>

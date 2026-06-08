@@ -4,6 +4,7 @@ import { useStatus } from './hooks/useStatus';
 import { useReminders } from './hooks/useReminders';
 import { HomeScreen } from './components/HomeScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { GardenScreen } from './components/GardenScreen';
 import { Toast, type ToastData } from './components/Toast';
 import { PlantGallery } from './components/PlantGallery';
 import { OnboardingScreen } from './components/OnboardingScreen';
@@ -13,6 +14,8 @@ import { BLOOM_MESSAGE } from './lib/copy';
 import { localToday } from './lib/api';
 import { calcStreak, yesterday } from './lib/streak';
 import { MILESTONES, highestSkin, readUnlockedSkins, writeUnlockedSkins } from './lib/achievements';
+import { assignTodayFlower, bloomTodayFlower, isTodayBloomed, RARITY_LABEL } from './lib/garden';
+import type { FlowerSpecies } from './lib/garden';
 
 const DEMO_MOODS: PlantMood[] = ['sleepy', 'happy', 'ok', 'thirsty', 'wilting'];
 
@@ -34,6 +37,7 @@ export default function App() {
   );
   const [unlockedSkins, setUnlockedSkins] = useState<PlantSkin[]>(() => readUnlockedSkins());
   const [unlock, setUnlock] = useState<{ skin: PlantSkin; message: string } | null>(null);
+  const [todayFlower, setTodayFlower] = useState<FlowerSpecies | null>(null);
   const [lifelineTick, setLifelineTick] = useState(0);
   const toastId = useRef(0);
 
@@ -84,6 +88,13 @@ export default function App() {
     setUnlock({ skin: top.skin, message: top.unlockMsg });
   }, [status, streakCount, unlockedSkins]);
 
+  // Assign (or recall) today's flower once status and streak are known.
+  useEffect(() => {
+    if (!status) return;
+    const flower = assignTodayFlower(localToday(), streakCount);
+    setTodayFlower(flower);
+  }, [status, streakCount]);
+
   const showToast = useCallback((message: string, type: ToastData['type']) => {
     setToast({ id: ++toastId.current, message, type });
   }, []);
@@ -122,8 +133,20 @@ export default function App() {
         return;
       }
       showToast('咕嚕咕嚕～紀錄好了！', 'success');
+
+      // 剛達標（progress >= 1）且今天還沒 bloom → 把今日花朵收入花田
+      if (res.plant.progress >= 1 && !isTodayBloomed(localToday())) {
+        bloomTodayFlower(localToday());
+        const flower = todayFlower;
+        if (flower) {
+          setUnlock({
+            skin: 'default',
+            message: `${flower.emoji} ${flower.name}盛開了！\n${RARITY_LABEL[flower.rarity]}花種收入花田 🌸`,
+          });
+        }
+      }
     },
-    [addWater, showToast]
+    [addWater, showToast, todayFlower]
   );
 
   const handleToggleReminders = useCallback(
@@ -187,7 +210,7 @@ export default function App() {
 
   return (
     <main className="app">
-      {screen === 'home' ? (
+      {screen === 'home' && (
         <HomeScreen
           status={demoMood ? { ...status, plant: { ...status.plant, mood: demoMood } } : status}
           busy={busy}
@@ -197,10 +220,13 @@ export default function App() {
           onUseLifeline={useLifeline}
           onAdd={handleAdd}
           onOpenSettings={() => setScreen('settings')}
+          onOpenGarden={() => setScreen('garden')}
           onRefresh={() => void reload()}
           onToast={showToast}
         />
-      ) : (
+      )}
+
+      {screen === 'settings' && (
         <SettingsScreen
           profile={status.profile}
           remindersEnabled={reminders.enabled}
@@ -211,6 +237,14 @@ export default function App() {
             showToast(ok ? '已儲存設定 🌿' : '儲存失敗，請再試一次', ok ? 'success' : 'error');
             return ok;
           }}
+          onBack={() => setScreen('home')}
+        />
+      )}
+
+      {screen === 'garden' && (
+        <GardenScreen
+          goalMl={status.profile.goalMl}
+          todayTotalMl={status.today.totalMl}
           onBack={() => setScreen('home')}
         />
       )}

@@ -1315,3 +1315,25 @@ button {
     animation: none;
   }
 }
+
+/* ── garden (feature B) ────────────────────────────────────── */
+.garden { padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.garden-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 18px; font-weight: 700; }
+.garden-back { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); padding: 4px 8px; border-radius: 8px; }
+.garden-back:hover { background: var(--track); }
+.garden-entry { padding: 12px 16px; border-radius: var(--r-card); background: var(--surface); display: flex; flex-direction: column; gap: 2px; }
+.garden-entry__row { display: flex; align-items: center; gap: 8px; }
+.garden-entry__date { font-size: 12px; color: var(--muted); }
+.garden-entry__name { font-size: 16px; font-weight: 600; }
+.garden-entry__rarity { font-size: 12px; color: var(--muted); }
+.garden-entry__hint { font-size: 12px; color: var(--muted); }
+.garden-entry--legendary .garden-entry__name {
+  animation: legendary-glow 2s ease-in-out infinite;
+}
+@keyframes legendary-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .garden-entry--legendary .garden-entry__name { animation: none; }
+}

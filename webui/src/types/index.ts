@@ -49,4 +49,4 @@ export interface RecordResponse {
   plant: Plant;
 }
 
-export type Screen = 'home' | 'settings';
+export type Screen = 'home' | 'settings' | 'garden';
