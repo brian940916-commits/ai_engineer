@@ -1,0 +1,806 @@
+/* Plant Buddy — visual scheme per 08-design-brief.md:
+   warm cream base, fresh greens, water-blue accent, rounded shapes, soft shadows. */
+
+:root {
+  --bg: #fbf6ec;
+  --surface: #fffdf8;
+  --green: #5fb98e;
+  --green-dark: #4aa378;
+  --aqua: #6fc8e0;
+  --aqua-dark: #4fb3d0;
+  --terra: #e0a07a;
+  --terra-dark: #c9875f;
+  --sun: #f6c95b;
+  --coral: #e8907c;
+  --soil: #8b6b4f;
+  --bud: #edb9c4;
+  --petal: #f4a9c0;
+  --text: #4a4039;
+  --text-muted: #9a9087;
+
+  --r-card: 20px;
+  --r-pill: 999px;
+  --shadow: 0 8px 24px rgba(74, 64, 57, 0.1);
+  --shadow-sm: 0 3px 10px rgba(74, 64, 57, 0.08);
+
+  --font-body: 'Noto Sans TC', 'M PLUS Rounded 1c', system-ui, sans-serif;
+  --font-display: 'Baloo 2', 'Noto Sans TC', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0;
+}
+
+/* --- Layout --------------------------------------------------------------- */
+
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 20px calc(28px + env(safe-area-inset-bottom));
+  min-height: 100vh;
+}
+
+.app--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--text-muted);
+}
+
+.errorbox {
+  text-align: center;
+  background: var(--surface);
+  border-radius: var(--r-card);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+}
+
+.errorbox p {
+  margin: 0 0 16px;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+
+.btn {
+  border: none;
+  border-radius: var(--r-pill);
+  padding: 12px 22px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  min-height: 44px;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--green);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--green-dark);
+}
+
+.btn--secondary {
+  background: var(--surface);
+  color: var(--green-dark);
+  border: 2px solid var(--green);
+}
+
+.btn--block {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* --- Home ----------------------------------------------------------------- */
+
+.home__header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.home__greeting {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.home__caption {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.nudge {
+  background: #fdeee9;
+  color: #b65a44;
+  border-radius: var(--r-pill);
+  padding: 10px 18px;
+  text-align: center;
+  font-weight: 500;
+  margin: 12px auto 0;
+  max-width: 360px;
+  box-shadow: var(--shadow-sm);
+}
+
+.home__hero {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+/* --- Plant ---------------------------------------------------------------- */
+
+.plant {
+  width: min(72vw, 280px);
+}
+
+.plant__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.plant__shadow {
+  fill: rgba(74, 64, 57, 0.08);
+}
+
+.plant__foliage {
+  transition: transform 0.4s ease;
+  transform-origin: 100px 152px;
+}
+
+.stem {
+  stroke: var(--green-dark);
+  stroke-width: 5;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.leaf {
+  fill: var(--green);
+}
+
+.bud {
+  fill: var(--bud);
+}
+
+.bud-sepal {
+  fill: var(--green);
+}
+
+.petal {
+  fill: var(--petal);
+}
+
+.flower-core {
+  fill: var(--sun);
+}
+
+.pot {
+  fill: var(--terra);
+}
+
+.pot-rim {
+  fill: var(--terra-dark);
+}
+
+.soil {
+  fill: var(--soil);
+}
+
+.eye {
+  fill: var(--text);
+}
+
+.eye-line,
+.brow,
+.mouth {
+  stroke: var(--text);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.brow {
+  stroke-width: 2;
+}
+
+/* Overlays */
+.sparkle {
+  fill: var(--sun);
+}
+
+.droplet,
+.sweat {
+  fill: var(--aqua);
+}
+
+.overlay-zzz {
+  fill: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.overlay-alert circle {
+  fill: var(--coral);
+}
+
+.overlay-alert text {
+  fill: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* Mood treatments: face + posture + color, never color alone. */
+.plant--mood-sleepy .plant__svg {
+  filter: saturate(0.8) brightness(0.98);
+}
+
+.plant--mood-thirsty .plant__foliage {
+  transform: rotate(2.5deg) translateY(2px) scaleY(0.97);
+}
+
+.plant--mood-wilting .plant__foliage {
+  transform: rotate(4deg) translateY(4px) scaleY(0.9);
+}
+
+.plant--mood-wilting .plant__svg {
+  filter: saturate(0.45) sepia(0.18) brightness(0.97);
+}
+
+/* Reward animations */
+@keyframes grow-bounce {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.08, 0.94);
+  }
+  70% {
+    transform: scale(0.97, 1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.plant--levelup .plant__svg {
+  animation: grow-bounce 0.7s ease;
+}
+
+@keyframes sparkle-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.plant--mood-happy .sparkle,
+.plant--stage-blooming .flower {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sparkle-pulse 1.8s ease-in-out infinite;
+}
+
+/* --- Progress ------------------------------------------------------------- */
+
+.progress {
+  margin: 12px 0 4px;
+}
+
+.progress__numbers {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progress__count {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.progress__unit {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.progress__pct {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--aqua-dark);
+}
+
+.progress__pct.is-reached {
+  color: var(--green-dark);
+}
+
+.progress__track {
+  height: 22px;
+  background: #f0e8d8;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: linear-gradient(180deg, #8ad8ec, var(--aqua));
+  border-radius: var(--r-pill);
+  position: relative;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 22px;
+}
+
+.progress__track.is-reached .progress__fill {
+  background: linear-gradient(180deg, #7fd0a6, var(--green));
+}
+
+/* gentle liquid wobble at the surface */
+.progress__wave {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  animation: wobble 2.2s ease-in-out infinite;
+}
+
+@keyframes wobble {
+  0%,
+  100% {
+    transform: translateY(-2px) scaleY(1);
+  }
+  50% {
+    transform: translateY(2px) scaleY(0.85);
+  }
+}
+
+/* --- Quick add ------------------------------------------------------------ */
+
+.quickadd {
+  margin: 18px 0;
+}
+
+.quickadd__row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quickadd__btn {
+  flex: 1 1 0;
+  min-width: 78px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.drop-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.quickadd__custom {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.quickadd__custom input {
+  flex: 1;
+}
+
+input[type='number'],
+input[type='text'],
+.text-input {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 12px 16px;
+  border: 2px solid #ece3d2;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  min-height: 44px;
+  width: 100%;
+}
+
+input:focus-visible,
+.text-input:focus-visible,
+button:focus-visible,
+.switch:focus-visible {
+  outline: 3px solid rgba(95, 185, 142, 0.5);
+  outline-offset: 2px;
+}
+
+.field-error {
+  color: var(--coral);
+  font-size: 0.9rem;
+  margin: 8px 2px 0;
+}
+
+/* --- History -------------------------------------------------------------- */
+
+.history {
+  background: var(--surface);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  margin-top: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.history__title {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.history__bars {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.history__day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.history__bar-track {
+  width: 100%;
+  max-width: 28px;
+  height: 80px;
+  background: #f3ecdd;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.history__bar {
+  width: 100%;
+  background: var(--aqua);
+  border-radius: 10px 10px 4px 4px;
+  transition: height 0.4s ease;
+}
+
+.history__bar.is-reached {
+  background: var(--green);
+}
+
+.history__day.is-today .history__bar-track {
+  box-shadow: 0 0 0 2px var(--sun) inset;
+}
+
+.history__label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.history__day.is-today .history__label {
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+/* --- Footer nav ----------------------------------------------------------- */
+
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.footer-nav__btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  min-height: 44px;
+  padding: 4px 12px;
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* --- Settings ------------------------------------------------------------- */
+
+.settings__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.iconbtn {
+  background: var(--surface);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.field {
+  display: block;
+  background: var(--surface);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.field--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.field__label {
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.field__hint {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.stepper__btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--green);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.stepper__value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.stepper__unit {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.text-input {
+  margin-top: 10px;
+}
+
+/* Toggle switch */
+.switch {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  border: none;
+  background: #e2dac9;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.switch.is-on {
+  background: var(--green);
+}
+
+.switch:disabled {
+  opacity: 0.5;
+}
+
+.switch__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+
+.switch.is-on .switch__knob {
+  transform: translateX(24px);
+}
+
+/* --- Toast ---------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(28px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 12px 22px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow);
+  font-weight: 500;
+  z-index: 50;
+  animation: toast-in 0.25s ease;
+  max-width: 90vw;
+}
+
+.toast--success {
+  background: #e4f4ec;
+  color: var(--green-dark);
+}
+
+.toast--error {
+  background: #fdeae4;
+  color: #c0654d;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* --- Celebration ---------------------------------------------------------- */
+
+.celebration {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 60;
+}
+
+.celebration__msg {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  background: var(--surface);
+  padding: 14px 24px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow);
+  animation: toast-in 0.3s ease;
+}
+
+.celebration__confetti span {
+  position: absolute;
+  top: -10vh;
+  left: calc(var(--i) * 6.25%);
+  width: 10px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--sun);
+  animation: confetti-fall 2.6s ease-in forwards;
+  animation-delay: calc(var(--i) * 0.08s);
+}
+
+.celebration__confetti span:nth-child(3n) {
+  background: var(--green);
+}
+.celebration__confetti span:nth-child(3n + 1) {
+  background: var(--aqua);
+}
+.celebration__confetti span:nth-child(4n) {
+  background: var(--petal);
+}
+
+@keyframes confetti-fall {
+  to {
+    transform: translateY(120vh) rotate(540deg);
+    opacity: 0.2;
+  }
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .app {
+    padding-top: 40px;
+  }
+  .plant {
+    width: 260px;
+  }
+}
+
+/* --- Reduced motion ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .celebration__confetti {
+    display: none;
+  }
+}
