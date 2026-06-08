@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Profile } from '../types';
+import { localToday } from '../lib/api';
 
 interface Props {
   profile: Profile;
@@ -133,20 +134,19 @@ export function SettingsScreen({
       <div className="set-section" style={{ marginTop: 22 }}>
         示範（給 demo 用）
       </div>
-      <div className="demo-grid">
-        <button
-          className="demo-btn"
-          onClick={() => demo(() => localStorage.removeItem('plantBuddyOnboarded'))}
-        >
-          🐣 重看歡迎畫面
-        </button>
-        <button
-          className="demo-btn"
-          onClick={() => demo(() => localStorage.removeItem('plantBuddyLastSeenDate'))}
-        >
-          🌅 跳到下一天
-        </button>
-      </div>
+      <button
+        className="demo-btn demo-btn--wide"
+        onClick={() =>
+          demo(() => {
+            // Advance the app's "today" by a real day: fresh date → water resets
+            // to 0, plant back to seed, and the new-day animation plays.
+            const cur = parseInt(localStorage.getItem('plantBuddyDemoDayOffset') ?? '0', 10) || 0;
+            localStorage.setItem('plantBuddyDemoDayOffset', String(cur + 1));
+          })
+        }
+      >
+        🌅 跳到下一天
+      </button>
 
       <div className="set-sub" style={{ padding: '10px 4px 6px' }}>
         模擬連續達標天數（解鎖花朵外觀）
@@ -174,6 +174,10 @@ export function SettingsScreen({
             localStorage.removeItem('plantBuddyDemoStreak');
             localStorage.removeItem('plantBuddyUnlocked');
             localStorage.removeItem('plantBuddyLifelineDate');
+            localStorage.removeItem('plantBuddyDemoDayOffset');
+            // Offset is gone, so localToday() is the real date — mark it seen to
+            // avoid a stray new-day screen right after resetting.
+            localStorage.setItem('plantBuddyLastSeenDate', localToday());
           })
         }
       >

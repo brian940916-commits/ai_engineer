@@ -672,6 +672,11 @@ button {
   background: #f2faf6;
 }
 
+.demo-btn--wide {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
 .demo-btn--clear {
   width: 100%;
   margin-top: 8px;
