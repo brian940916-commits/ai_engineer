@@ -6,6 +6,7 @@ import { HomeScreen } from './components/HomeScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { Toast, type ToastData } from './components/Toast';
 import { PlantGallery } from './components/PlantGallery';
+import { OnboardingScreen } from './components/OnboardingScreen';
 import { BLOOM_MESSAGE } from './lib/copy';
 import { localToday } from './lib/api';
 
@@ -21,6 +22,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<ToastData | null>(null);
   const [celebrating, setCelebrating] = useState(false);
+  const [onboarded, setOnboarded] = useState(() => !!localStorage.getItem('plantBuddyOnboarded'));
   const toastId = useRef(0);
 
   const showToast = useCallback((message: string, type: ToastData['type']) => {
@@ -76,6 +78,10 @@ export default function App() {
     },
     [reminders, showToast]
   );
+
+  if (!onboarded) {
+    return <OnboardingScreen onComplete={() => setOnboarded(true)} />;
+  }
 
   if (loading && !status) {
     return (

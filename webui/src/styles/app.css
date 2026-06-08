@@ -728,3 +728,116 @@ button {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ── onboarding (feature 1) ────────────────────────────────── */
+.onboard {
+  min-height: 100vh;
+  max-width: 440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  animation: onboardIn 0.4s ease;
+}
+
+.onboard.is-leaving {
+  animation: onboardOut 0.4s ease forwards;
+}
+
+.onboard__art {
+  width: 150px;
+  height: 172px;
+  margin-bottom: 8px;
+}
+
+.onboard__title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.onboard__sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.onboard__input {
+  width: 100%;
+  margin-top: 28px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--text);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.onboard__input:focus {
+  border-color: var(--water);
+}
+
+.onboard__btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px;
+  border: none;
+  border-radius: var(--r-btn);
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(95, 185, 142, 0.28);
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.onboard__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.onboard__btn:not(:disabled):hover {
+  background: #4fa87a;
+}
+
+.onboard__error {
+  color: #c06040;
+  font-size: 13px;
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+.onboard__hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 22px;
+}
+
+@keyframes onboardIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes onboardOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: scale(0.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboard,
+  .onboard.is-leaving {
+    animation: none;
+  }
+}
