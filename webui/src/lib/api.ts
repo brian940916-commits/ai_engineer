@@ -26,6 +26,19 @@ export function localToday(): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+// The last `n` local dates ending today (oldest → newest), honouring the demo
+// offset. Shared by the 7-day history chart and the drink-time chart.
+export function recentLocalDates(n: number): string[] {
+  const [y, m, d] = localToday().split('-').map(Number);
+  const base = new Date(y, m - 1, d);
+  const p = (x: number) => String(x).padStart(2, '0');
+  return Array.from({ length: n }, (_, i) => {
+    const dt = new Date(base);
+    dt.setDate(base.getDate() - (n - 1 - i));
+    return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`;
+  });
+}
+
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
@@ -56,7 +69,7 @@ export const recordWater = (amountMl: number) =>
     method: 'POST',
     body: JSON.stringify({ amountMl, date: localToday() }),
   }).then((res) => {
-    logDrinkTime(amountMl); // local time-of-day log (feature 6)
+    logDrinkTime(amountMl, localToday()); // local time-of-day log (feature 6)
     return res;
   });
 

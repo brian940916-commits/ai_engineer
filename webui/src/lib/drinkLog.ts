@@ -4,8 +4,9 @@ const KEY = 'plantBuddyDrinkLog';
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 
 export interface DrinkEntry {
-  ts: number; // Date.now() at the time of the drink
+  ts: number; // Date.now() at the time of the drink (used for hour-of-day)
   ml: number;
+  date?: string; // the app's local date (localToday); honours the demo offset
 }
 
 export function getDrinkLog(): DrinkEntry[] {
@@ -17,9 +18,9 @@ export function getDrinkLog(): DrinkEntry[] {
   }
 }
 
-export function logDrinkTime(amountMl: number): void {
+export function logDrinkTime(amountMl: number, date: string): void {
   const cutoff = Date.now() - THIRTY_DAYS;
   const log = getDrinkLog().filter((e) => e.ts > cutoff);
-  log.push({ ts: Date.now(), ml: amountMl });
+  log.push({ ts: Date.now(), ml: amountMl, date });
   localStorage.setItem(KEY, JSON.stringify(log));
 }

@@ -1,5 +1,5 @@
 import type { HistoryDay } from '../types';
-import { localToday } from '../lib/api';
+import { localToday, recentLocalDates } from '../lib/api';
 
 interface Props {
   history: HistoryDay[];
@@ -10,19 +10,6 @@ const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 function weekday(date: string): string {
   const [y, m, d] = date.split('-').map(Number);
   return WEEKDAYS[new Date(y, m - 1, d).getDay()];
-}
-
-// The last 7 calendar dates ending today (oldest → newest), regardless of which
-// ones exist in the data — so the chart always shows a full week.
-function last7Dates(): string[] {
-  const [y, m, d] = localToday().split('-').map(Number);
-  const base = new Date(y, m - 1, d);
-  const p = (n: number) => String(n).padStart(2, '0');
-  return Array.from({ length: 7 }, (_, i) => {
-    const dt = new Date(base);
-    dt.setDate(base.getDate() - (6 - i));
-    return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`;
-  });
 }
 
 function shortMl(ml: number): string {
@@ -41,7 +28,7 @@ export function HistoryStrip({ history }: Props) {
     <div>
       <div className="section-label">近 7 天</div>
       <div className="hist-bars">
-        {last7Dates().map((date) => {
+        {recentLocalDates(7).map((date) => {
           const h = byDate.get(date);
           const total = h?.totalMl ?? 0;
           const goal = h?.goalMl ?? fallbackGoal;
