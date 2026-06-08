@@ -41,6 +41,12 @@ export default function App() {
     () => (status ? calcStreak(status.history) : null),
     [status, lifelineTick]
   );
+  // Demo override (Settings → 示範): force a streak so achievements can be shown.
+  const [demoStreak] = useState(() => {
+    const n = parseInt(localStorage.getItem('plantBuddyDemoStreak') ?? '', 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  });
+  const streakCount = demoStreak > 0 ? demoStreak : streakInfo?.current ?? 0;
   const currentSkin = highestSkin(unlockedSkins);
 
   // Yesterday missed → the lifeline banner may offer a rescue.
@@ -58,9 +64,9 @@ export default function App() {
 
   // Unlock any milestone the current streak has reached but not yet unlocked.
   useEffect(() => {
-    if (!streakInfo) return;
+    if (!status) return;
     const newly = MILESTONES.filter(
-      (m) => streakInfo.current >= m.days && !unlockedSkins.includes(m.skin)
+      (m) => streakCount >= m.days && !unlockedSkins.includes(m.skin)
     );
     if (newly.length === 0) return;
     const next = [...unlockedSkins, ...newly.map((m) => m.skin)];
@@ -68,7 +74,7 @@ export default function App() {
     setUnlockedSkins(next);
     const top = newly[newly.length - 1];
     setUnlock({ skin: top.skin, message: top.unlockMsg });
-  }, [streakInfo, unlockedSkins]);
+  }, [status, streakCount, unlockedSkins]);
 
   const showToast = useCallback((message: string, type: ToastData['type']) => {
     setToast({ id: ++toastId.current, message, type });
@@ -178,7 +184,7 @@ export default function App() {
           status={status}
           busy={busy}
           skin={currentSkin}
-          streak={streakInfo?.current ?? 0}
+          streak={streakCount}
           canUseLifeline={canUseLifeline}
           onUseLifeline={useLifeline}
           onAdd={handleAdd}

@@ -643,6 +643,42 @@ button {
   background: #3dd68c;
 }
 
+/* ── demo controls (Settings) ──────────────────────────────── */
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.demo-grid--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.demo-btn {
+  border: 1.5px solid #d5ebe2;
+  background: var(--surface);
+  color: var(--primary);
+  border-radius: 14px;
+  padding: 12px 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.demo-btn:hover {
+  background: #f2faf6;
+}
+
+.demo-btn--clear {
+  width: 100%;
+  margin-top: 8px;
+  color: var(--muted);
+  border-color: var(--border);
+}
+
 /* ── celebration ───────────────────────────────────────────── */
 .celebrate-layer {
   position: fixed;

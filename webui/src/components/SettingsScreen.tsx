@@ -30,6 +30,13 @@ export function SettingsScreen({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Demo helpers: mutate localStorage then hard-reload so App re-reads the flags
+  // and replays the relevant full-screen flow / achievement state.
+  const demo = (mutate: () => void) => {
+    mutate();
+    window.location.reload();
+  };
+
   const save = async () => {
     if (!Number.isInteger(goal) || goal < GOAL_MIN || goal > GOAL_MAX) {
       setError(`每日目標需介於 ${GOAL_MIN}–${GOAL_MAX} ml`);
@@ -121,6 +128,56 @@ export function SettingsScreen({
 
       <button className={`save-btn ${saved ? 'is-saved' : ''}`} onClick={save} disabled={saving}>
         {saved ? '✓ 已儲存！' : saving ? '儲存中…' : '儲存'}
+      </button>
+
+      <div className="set-section" style={{ marginTop: 22 }}>
+        示範（給 demo 用）
+      </div>
+      <div className="demo-grid">
+        <button
+          className="demo-btn"
+          onClick={() => demo(() => localStorage.removeItem('plantBuddyOnboarded'))}
+        >
+          🐣 重看歡迎畫面
+        </button>
+        <button
+          className="demo-btn"
+          onClick={() => demo(() => localStorage.removeItem('plantBuddyLastSeenDate'))}
+        >
+          🌅 跳到下一天
+        </button>
+      </div>
+
+      <div className="set-sub" style={{ padding: '10px 4px 6px' }}>
+        模擬連續達標天數（解鎖花朵外觀）
+      </div>
+      <div className="demo-grid demo-grid--4">
+        {[3, 7, 14, 30].map((d) => (
+          <button
+            key={d}
+            className="demo-btn"
+            onClick={() =>
+              demo(() => {
+                localStorage.setItem('plantBuddyDemoStreak', String(d));
+                localStorage.removeItem('plantBuddyUnlocked'); // replay the unlock
+              })
+            }
+          >
+            {d}天
+          </button>
+        ))}
+      </div>
+      <button
+        className="demo-btn demo-btn--clear"
+        onClick={() =>
+          demo(() => {
+            localStorage.removeItem('plantBuddyDemoStreak');
+            localStorage.removeItem('plantBuddyUnlocked');
+            localStorage.removeItem('plantBuddyLifelineDate');
+          })
+        }
+      >
+        清除示範狀態
       </button>
     </>
   );
