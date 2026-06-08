@@ -73,6 +73,11 @@ def handler(event, context):
     else:
         total_ml, drink_count, last_drink_at = 0, 0, None
 
+    entries = today_item.get("entries", []) if today_item else []
+    # 依 at 升序排列；ml 從 DynamoDB Decimal 轉回 int 以利 JSON 序列化
+    entries = sorted(entries, key=lambda e: e.get("at", ""))
+    entries = [{"ml": int(e.get("ml", 0)), "at": e.get("at")} for e in entries]
+
     history = []
     for d in day_items:
         d_total = int(d.get("totalMl", 0))
@@ -90,6 +95,7 @@ def handler(event, context):
             "totalMl": total_ml,
             "drinkCount": drink_count,
             "lastDrinkAt": last_drink_at,
+            "entries": entries,
         },
         "plant": plant.compute(total_ml, goal_ml, last_drink_at),
         "history": history,

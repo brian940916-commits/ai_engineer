@@ -197,6 +197,8 @@ export default function App() {
           onUseLifeline={useLifeline}
           onAdd={handleAdd}
           onOpenSettings={() => setScreen('settings')}
+          onRefresh={() => void reload()}
+          onToast={showToast}
         />
       ) : (
         <SettingsScreen

@@ -28,6 +28,7 @@ Resources:
           - GET
           - POST
           - PUT
+          - DELETE
           - OPTIONS
 
   # --- Lambda Functions ---
@@ -47,6 +48,23 @@ Resources:
             ApiId: !Ref WaterHttpApi
             Path: /water
             Method: POST
+
+  DeleteWaterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: water-delete
+      Handler: delete_water.handler
+      CodeUri: lambda/delete_water/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WaterTrackerTable
+      Events:
+        DeleteWater:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WaterHttpApi
+            Path: /water
+            Method: DELETE
 
   GetStatusFunction:
     Type: AWS::Serverless::Function

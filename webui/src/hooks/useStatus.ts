@@ -25,6 +25,7 @@ function applyRecord(prev: StatusResponse, res: RecordResponse): StatusResponse 
       totalMl: res.totalMl,
       drinkCount: res.drinkCount,
       lastDrinkAt: res.lastDrinkAt,
+      entries: prev.today.entries, // POST 不回傳 entries；下次 reload 會補上新紀錄
     },
     plant: res.plant,
     history,

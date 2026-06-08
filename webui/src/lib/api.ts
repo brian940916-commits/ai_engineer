@@ -73,5 +73,11 @@ export const recordWater = (amountMl: number) =>
     return res;
   });
 
+export const deleteWater = (date: string, entryIndex: number) =>
+  api<RecordResponse>('/water', {
+    method: 'DELETE',
+    body: JSON.stringify({ date, entryIndex }),
+  });
+
 export const updateProfile = (p: { goalMl?: number; nickname?: string }) =>
   api<Profile>('/profile', { method: 'PUT', body: JSON.stringify(p) });

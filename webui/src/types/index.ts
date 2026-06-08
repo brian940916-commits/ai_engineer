@@ -13,11 +13,17 @@ export interface Profile {
   goalMl: number;
 }
 
+export interface DrinkEntry {
+  ml: number;
+  at: string; // ISO 8601，例如 "2026-06-09T08:32:10Z"
+}
+
 export interface Today {
   date: string;
   totalMl: number;
   drinkCount: number;
   lastDrinkAt: string | null;
+  entries: DrinkEntry[];
 }
 
 export interface HistoryDay {
