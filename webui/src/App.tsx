@@ -112,6 +112,31 @@ export default function App() {
     schedule(status?.today.lastDrinkAt ?? null);
   }, [status?.today.lastDrinkAt, schedule]);
 
+  // Day-rollover guard: status is fetched once for the date it loaded on. If the
+  // local calendar date changes while the app stays open — or the tab is brought
+  // back on a new day — the cached "today" is stale, so progress shows yesterday
+  // and an optimistic add would stack onto yesterday's total. Detect the change
+  // and re-fetch (and replay the new-day screen) so today's progress resets.
+  useEffect(() => {
+    if (!status) return;
+    const check = () => {
+      if (localToday() === status.today.date) return;
+      setNewDaySeen(localStorage.getItem('plantBuddyLastSeenDate') === localToday());
+      void reload();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') check();
+    };
+    const id = window.setInterval(check, 60_000);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', check);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', check);
+    };
+  }, [status, reload]);
+
   // One-time-per-day bloom celebration when the goal is reached.
   useEffect(() => {
     if (status?.plant.stage !== 'blooming') return;
