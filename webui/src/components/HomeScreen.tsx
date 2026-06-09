@@ -32,6 +32,8 @@ export function HomeScreen({
   onOpenGarden,
 }: Props) {
   const { profile, today, plant, history } = status;
+  // 後端可能尚未部署 entries 欄位；缺少時當作空陣列，避免整頁崩潰。
+  const entries = today.entries ?? [];
   const alert = plant.mood === 'thirsty' || plant.mood === 'wilting' ? MOOD_ALERT[plant.mood] : null;
 
   // Grow-bounce whenever today's total increases (design reward on logging water).
@@ -157,9 +159,9 @@ export function HomeScreen({
         <QuickAdd onAdd={handleAddWithAnim} disabled={busy} />
       </div>
 
-      {today.entries.length > 0 && (
+      {entries.length > 0 && (
         <div className="card">
-          <EntryList entries={today.entries} />
+          <EntryList entries={entries} />
         </div>
       )}
 
