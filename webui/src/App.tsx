@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { PlantMood, Screen } from './types';
+import type { PlantMood, PlantSkin, Screen } from './types';
 import { useStatus } from './hooks/useStatus';
 import { useReminders } from './hooks/useReminders';
 import { HomeScreen } from './components/HomeScreen';
@@ -13,7 +13,7 @@ import { UnlockScreen } from './components/UnlockScreen';
 import { BLOOM_MESSAGE } from './lib/copy';
 import { localToday } from './lib/api';
 import { calcStreak, yesterday } from './lib/streak';
-import { STREAK_MILESTONES, readUnlockedMilestones, writeUnlockedMilestones } from './lib/achievements';
+import { MILESTONES, highestSkin, readUnlockedSkins, writeUnlockedSkins } from './lib/achievements';
 import { assignTodayFlower, bloomTodayFlower, isTodayBloomed, RARITY_LABEL } from './lib/garden';
 import type { FlowerSpecies } from './lib/garden';
 
@@ -35,7 +35,8 @@ export default function App() {
   const [newDaySeen, setNewDaySeen] = useState(
     () => localStorage.getItem('plantBuddyLastSeenDate') === localToday()
   );
-  const [unlock, setUnlock] = useState<{ message: string } | null>(null);
+  const [unlockedSkins, setUnlockedSkins] = useState<PlantSkin[]>(() => readUnlockedSkins());
+  const [unlock, setUnlock] = useState<{ skin?: PlantSkin; message: string } | null>(null);
   const [todayFlower, setTodayFlower] = useState<FlowerSpecies | null>(null);
   const [lifelineTick, setLifelineTick] = useState(0);
   const toastId = useRef(0);
@@ -52,6 +53,7 @@ export default function App() {
     return Number.isFinite(n) && n > 0 ? n : 0;
   });
   const streakCount = demoStreak > 0 ? demoStreak : streakInfo?.current ?? 0;
+  const currentSkin = highestSkin(unlockedSkins);
 
   // Demo override (Settings → 模擬花朵情緒): force the displayed mood.
   const [demoMood] = useState<PlantMood | null>(() => {
@@ -72,18 +74,19 @@ export default function App() {
     setLifelineTick((t) => t + 1);
   }, []);
 
-  // 連續天數達到里程碑時顯示解鎖訊息（解鎖更稀有的花種）。
+  // 連續天數達到里程碑時：解鎖植物外觀，同時花田開始出現更稀有的花種。
   useEffect(() => {
-    if (!status || streakCount === 0) return;
-    const unlocked = readUnlockedMilestones();
-    const newly = STREAK_MILESTONES.filter(
-      (m) => streakCount >= m.days && !unlocked.includes(m.days)
+    if (!status) return;
+    const newly = MILESTONES.filter(
+      (m) => streakCount >= m.days && !unlockedSkins.includes(m.skin)
     );
     if (newly.length === 0) return;
-    writeUnlockedMilestones([...unlocked, ...newly.map((m) => m.days)]);
+    const next = [...unlockedSkins, ...newly.map((m) => m.skin)];
+    writeUnlockedSkins(next);
+    setUnlockedSkins(next);
     const top = newly[newly.length - 1];
-    setUnlock({ message: top.message });
-  }, [status, streakCount]);
+    setUnlock({ skin: top.skin, message: top.unlockMsg });
+  }, [status, streakCount, unlockedSkins]);
 
   // Assign (or recall) today's flower once status and streak are known.
   useEffect(() => {
@@ -210,6 +213,7 @@ export default function App() {
         <HomeScreen
           status={demoMood ? { ...status, plant: { ...status.plant, mood: demoMood } } : status}
           busy={busy}
+          skin={currentSkin}
           streak={streakCount}
           canUseLifeline={canUseLifeline}
           onUseLifeline={useLifeline}
@@ -246,6 +250,7 @@ export default function App() {
 
       {unlock && (
         <UnlockScreen
+          skin={unlock.skin}
           message={unlock.message}
           onClose={() => setUnlock(null)}
         />

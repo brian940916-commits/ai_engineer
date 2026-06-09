@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StatusResponse } from '../types';
+import type { PlantSkin, StatusResponse } from '../types';
 import { greeting, MOOD_ALERT, MOOD_CAPTION } from '../lib/copy';
 import { getPlantSpeech } from '../lib/plantSpeech';
 import { PlantView } from './PlantView';
@@ -13,6 +13,7 @@ import { DrinkTimeChart } from './DrinkTimeChart';
 interface Props {
   status: StatusResponse;
   busy: boolean;
+  skin: PlantSkin;
   streak: number;
   canUseLifeline: boolean;
   onUseLifeline: () => void;
@@ -24,6 +25,7 @@ interface Props {
 export function HomeScreen({
   status,
   busy,
+  skin,
   streak,
   canUseLifeline,
   onUseLifeline,
@@ -147,7 +149,7 @@ export function HomeScreen({
           onClick={() => say(getPlantSpeech(plant.mood, 'tap'))}
           aria-label="戳一下小植物"
         >
-          <PlantView plant={plant} />
+          <PlantView plant={plant} skin={skin} />
         </button>
       </div>
 
