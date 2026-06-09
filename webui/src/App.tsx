@@ -216,8 +216,6 @@ export default function App() {
           onAdd={handleAdd}
           onOpenSettings={() => setScreen('settings')}
           onOpenGarden={() => setScreen('garden')}
-          onRefresh={() => void reload()}
-          onToast={showToast}
         />
       )}
 

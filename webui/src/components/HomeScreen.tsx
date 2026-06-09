@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { StatusResponse } from '../types';
-import { deleteWater } from '../lib/api';
 import { greeting, MOOD_ALERT, MOOD_CAPTION } from '../lib/copy';
 import { getPlantSpeech } from '../lib/plantSpeech';
 import { PlantView } from './PlantView';
@@ -20,8 +19,6 @@ interface Props {
   onAdd: (amountMl: number) => void;
   onOpenSettings: () => void;
   onOpenGarden: () => void;
-  onRefresh: () => void;
-  onToast: (message: string, type: 'success' | 'error') => void;
 }
 
 export function HomeScreen({
@@ -33,8 +30,6 @@ export function HomeScreen({
   onAdd,
   onOpenSettings,
   onOpenGarden,
-  onRefresh,
-  onToast,
 }: Props) {
   const { profile, today, plant, history } = status;
   const alert = plant.mood === 'thirsty' || plant.mood === 'wilting' ? MOOD_ALERT[plant.mood] : null;
@@ -164,12 +159,7 @@ export function HomeScreen({
 
       {today.entries.length > 0 && (
         <div className="card">
-          <EntryList
-            date={today.date}
-            entries={today.entries}
-            onRefresh={onRefresh}
-            onToast={onToast}
-          />
+          <EntryList entries={today.entries} />
         </div>
       )}
 
@@ -199,39 +189,15 @@ export function HomeScreen({
   );
 }
 
-// Today's drink entries with a per-row delete. Times are the UTC `at` rendered in
-// the client's local timezone (HH:mm, no seconds).
-function EntryList({
-  date,
-  entries,
-  onRefresh,
-  onToast,
-}: {
-  date: string;
-  entries: { ml: number; at: string }[];
-  onRefresh: () => void;
-  onToast: (message: string, type: 'success' | 'error') => void;
-}) {
-  const [deleting, setDeleting] = useState<number | null>(null);
-
+// Today's drink entries. Times are the UTC `at` rendered in the client's local
+// timezone (HH:mm, no seconds).
+function EntryList({ entries }: { entries: { ml: number; at: string }[] }) {
   const fmtTime = (at: string) =>
     new Date(at).toLocaleTimeString('zh-TW', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
     });
-
-  const handleDelete = async (index: number) => {
-    setDeleting(index);
-    try {
-      await deleteWater(date, index);
-      onRefresh();
-    } catch {
-      onToast('刪除失敗，請再試一次', 'error');
-    } finally {
-      setDeleting(null);
-    }
-  };
 
   return (
     <>
@@ -241,15 +207,6 @@ function EntryList({
           <div className="entry-row" key={`${e.at}-${i}`}>
             <span className="entry-row__time">🕐 {fmtTime(e.at)}</span>
             <span className="entry-row__ml">{e.ml}ml</span>
-            <button
-              type="button"
-              className="entry-row__del"
-              onClick={() => void handleDelete(i)}
-              disabled={deleting !== null}
-              aria-label="刪除這筆紀錄"
-            >
-              {deleting === i ? '…' : '✕'}
-            </button>
           </div>
         ))}
       </div>
